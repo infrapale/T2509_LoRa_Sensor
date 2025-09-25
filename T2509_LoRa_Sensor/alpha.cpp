@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
+#include "main.h"
 #include "Adafruit_LEDBackpack.h"
 #include "io.h"
 #include "alpha.h"
@@ -36,38 +37,17 @@ Adafruit_AlphaNum4 alpha4 = Adafruit_AlphaNum4();
 char displaybuffer[4] = {' ', ' ', ' ', ' '};
 
 void alpha_initialize(void) { 
-  alpha4.begin(0x70, Wirep );  // pass in the address
-  // alpha4.writeDigitRaw(3, 0x0);
-  // alpha4.writeDigitRaw(0, 0xFFFF);
-  // alpha4.writeDisplay();
-  // delay(200);
-  // alpha4.writeDigitRaw(0, 0x0);
-  // alpha4.writeDigitRaw(1, 0xFFFF);
-  // alpha4.writeDisplay();
-  // delay(200);
-  // alpha4.writeDigitRaw(1, 0x0);
-  // alpha4.writeDigitRaw(2, 0xFFFF);
-  // alpha4.writeDisplay();
-  // delay(200);
-  // alpha4.writeDigitRaw(2, 0x0);
-  // alpha4.writeDigitRaw(3, 0xFFFF);
-  // alpha4.writeDisplay();
-  // delay(200);
+    alpha4.begin(I2C_ADDR_ALPHANUM, Wirep );  // pass in the address
 
-  ctrl.timeout = millis() + 5000;
-  atask_add_new(&alpha_handle);  
+    ctrl.timeout = millis() + 5000;
+    atask_add_new(&alpha_handle);  
 
-  alpha_show_str4_event("LoRa",5000,false);
-
-//   alpha4.clear();
-//   alpha4.writeDisplay();
-//   alpha_show_str("LoRa");
-//   delay(2000);
-//   alpha_show_float(12.4);
-//   alpha4.writeDisplay();
-//   delay(2000);
-//   alpha_show_float(-23.1);
-//   alpha4.writeDisplay();
+    alpha_show_str4_event("LoRa",5000,false);
+    delay(2000);
+    char buff[6] = {0};
+    sprintf(buff,"@%3d",ADDR_SENDER);
+    alpha_show_str4_event(buff,4000,false);
+    delay(4000);
 }
 
 void alpha_show_str(char *str){
@@ -197,7 +177,7 @@ void alpha_task(void)
             }
             break;
         case 150:
-            Serial.printf("Default =%X\n",ctrl.default_event);
+            //Serial.printf("Default =%X\n",ctrl.default_event);
             if (ctrl.event == 0) ctrl.event = ctrl.default_event;
             alpha_handle.state = 20;
             break;

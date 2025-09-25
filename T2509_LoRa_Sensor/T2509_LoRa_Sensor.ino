@@ -90,7 +90,7 @@ void setup()
   parser_initialize();
   //if(main_ctrl.test_activated)
   {
-    atask_add_new(&debug_print_handle);
+    //atask_add_new(&debug_print_handle);
   }
   sensor_initialize();
 }

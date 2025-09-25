@@ -55,9 +55,9 @@ typedef struct
     uint8_t           target;
     uint8_t           sender;
     uint32_t          next_send;
-    float             temperature;
-    uint16_t          counter;
-    bool              avail;
+    // float             temperature;
+    // uint16_t          counter;
+    // bool              avail;
 } rfm_sensor_msg_st;
 
 
@@ -73,6 +73,7 @@ typedef struct
 {
     char            buff[RH_RF95_MAX_MESSAGE_LEN];
     uint32_t        timeout;
+    uint8_t         sensor_indx;
     msg_st          tx_msg;
     msg_st          rx_msg;
     uint8_t         node_addr;
@@ -104,6 +105,8 @@ typedef struct
 void rfm_initialize(node_role_et node_role);
 
 void rfm_task_initilaize(void);
+
+void rfm_set_sender(uint8_t sender);
 
 void rfm_reset(void);
 

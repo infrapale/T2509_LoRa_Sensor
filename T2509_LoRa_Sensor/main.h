@@ -9,7 +9,7 @@
 #define UNIT_LABEL_LEN      10
 #define MEASURE_LABEL_LEN   16
 
-#define APP_NAME   "T2505_RFM95_Test4"
+#define APP_NAME   "T2509_LoRa_Sensor"
 #define SW_BM_TEST          0b00001000
 #define SW_BM_ROLE          0b00000100
 #define SW_BM_ADDR_1        0b00000010
@@ -18,21 +18,30 @@
 #define DEBUG_PRINT
 
 #define UART_0              Serial
-#define DEBUG_UART_BPS      9600
-#define INTERCONNECT_UART_BPS      9600
+#define DEBUG_UART_BPS          9600
+#define INTERCONNECT_UART_BPS   9600
 
 #define ADDR_TARGET             0
 #define ADDR_SENDER             42
 
+//#define SENSOR_BMP180
+//#define SENSOR_BMP280
+#define SENSOR_AHT20
+//#define SENSOR_SHT31
 
-#define INTERVAL_READ_SENSOR    32000
-#define INTERVAL_SEND_TEMP      60000
+#define TEST_MODE
+#define I2C_ADDR_ALPHANUM       0x70
+
+
+#define INTERVAL_READ_SENSOR    10000
+#define INTERVAL_SEND_TEMP      30000
 
 typedef enum
 {
     NODE_ROLE_UNDEFINED = 0,
     NODE_ROLE_CLIENT,
     NODE_ROLE_SERVER,
+    NODE_ROLE_SENSOR,
     NODE_ROLE_NBR_OF
 } node_role_et;
 

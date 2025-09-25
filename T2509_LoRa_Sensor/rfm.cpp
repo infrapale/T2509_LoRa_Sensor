@@ -23,15 +23,13 @@ RH_RF95 rf95(PIN_RFM_CS, PIN_RFM_IRQ );
 
 rfm_ctrl_st rfm_ctrl = {0};
 extern main_ctrl_st main_ctrl;
-extern sensors_st sensor;
+extern sensor_st sensor[SENSOR_TYPE_NBR_OF];
 
 rfm_sensor_msg_st sensor_msg = {
     .target = ADDR_TARGET,
     .sender = ADDR_SENDER,
     .next_send = 0,
-    .temperature = -99.9,
-    .counter = 0,
-    .avail = false,
+    //.avail = false,
 };
 
 //                                  123456789012345   ival  next  state  prev  cntr flag  call backup
@@ -73,6 +71,11 @@ void rfm_task_initilaize(void)
     rfm_ctrl.tindx =  atask_add_new(&rfm_task_handle);
 }
 
+void rfm_set_sender(uint8_t sender)
+{
+    sensor_msg.sender = sender;
+}
+
 void rfm_reset(void)
 {
     digitalWrite(PIN_RFM_RESET, LOW);
@@ -88,11 +91,15 @@ uint8_t sdata[] = "And hello back to you";
 
 void rfm_send_str(char *msg)
 {
-   uint8_t msg_len = strlen(msg);
-   memset(rfm_ctrl.send_msg,0x00,RH_RF95_MAX_MESSAGE_LEN);
-   memcpy(rfm_ctrl.send_msg, msg, msg_len);
-   rfm_ctrl.send_msg_len = msg_len; 
-   // Serial1.printf("%s len=%d",msg,msg_len);
+    uint8_t msg_len = strlen(msg);
+    Serial.printf("Radiating: %s",rfm_ctrl.buff);
+    memset(rfm_ctrl.send_msg,0x00,RH_RF95_MAX_MESSAGE_LEN);
+    memcpy(rfm_ctrl.send_msg, msg, msg_len);
+    rfm_ctrl.send_msg_len = msg_len; 
+    rf95.send(rfm_ctrl.send_msg, rfm_ctrl.send_msg_len);
+    rf95.waitPacketSent();
+    Serial.printf(" .. packet done\n");
+    // Serial1.printf("%s len=%d",msg,msg_len);
 }
 
 void rfm_set_power(int8_t pwr)
@@ -131,287 +138,133 @@ void fix_serial1(void)
 }
 
 
-void loop_client(void)
+//void rfm_build_test_message()
+
+void rfm_build_sensor_msg(uint8_t sindx)
 {
-    //Serial.print("C"); Serial.print(rfm_task_handle.state);
-    switch(rfm_task_handle.state)
-    {
-        case 0:
-            rfm_task_handle.state = 5;
-            break;
-        case 5:    
-            if(rfm_ctrl.send_msg_len > 0) 
-            {
-                rfm_ctrl.reply_status =  REPLY_UNDEFINED;
-                rfm_task_handle.state = 10;
-                io_blink(COLOR_BLUE, BLINK_FAST_BLINK);
-            }
-            break;
-        case 10:
-            rf95.send(rfm_ctrl.send_msg, rfm_ctrl.send_msg_len);
-            rf95.waitPacketSent();
-            rfm_ctrl.send_msg_len = 0;
-            if (rf95.waitAvailableTimeout(3000))
-            {
-                rfm_ctrl.rec_msg_len = RH_RF95_MAX_MESSAGE_LEN-10;
-                rfm_task_handle.state = 30;
-            }
-            else
-            {
-              rfm_task_handle.state = 40;
-              rfm_ctrl.reply_status =  REPLY_FAILED;
-              Serial1.println("*******REPLY_FAILED*******");
-            }
-            break;
-        case 30:
-            // Should be a reply message for us now   
-            if (rf95.recv(rfm_ctrl.rec_msg, &rfm_ctrl.rec_msg_len))
-            {
-                rfm_ctrl.reply_status =  REPLY_RECEIVED;
-                rfm_ctrl.rssi = rf95.lastRssi();
-                if(rfm_ctrl.rec_msg_len < RH_RF95_MAX_MESSAGE_LEN-1 )
-                {
-                    rfm_ctrl.rec_msg[rfm_ctrl.rec_msg_len] = 0x00;
-                    Serial1.println((char*)rfm_ctrl.rec_msg);
-                }
-                parser_radio_reply(rfm_ctrl.rec_msg, rfm_ctrl.rssi);
-                //Serial1.print("got reply: ");
-                //Serial.println((char*)rfm_ctrl.rec_msg);
-                //Serial.print("RSSI: ");
-                //Serial.println(rfm_ctrl.rssi, DEC);    
-                rfm_task_handle.state = 50;  
-            }
-            else
-            {
-                //Serial.println("recv failed");
-                rfm_task_handle.state = 40;  
-                rfm_ctrl.reply_status =  REPLY_FAILED;
-            }            
-            break;
-        case 40:
-            io_blink(COLOR_RED, BLINK_FAST_FLASH);           
-            Serial.println("No reply, is rf95_server running?");
-            rfm_task_handle.state = 50;  
-            break;
-        case 50:    
-            io_blink(COLOR_BLUE, BLINK_OFF); 
-            rfm_timeout = millis() + 1000;
-            rfm_task_handle.state = 60;  
-            break;
-        case 60:
-            if(millis() > rfm_timeout) rfm_task_handle.state = 100; 
-            break;
-        case 100:
-            io_blink(COLOR_RED, BLINK_OFF);
-            rfm_task_handle.state = 0; 
-            break;
-
-    }
-}
-
-void loop_server(void)
-{
-    //Serial.print("S"); Serial.print(rfm_task_handle.state);
-    char txt[64];
-    switch(rfm_task_handle.state)
-    {
-        case 0:
-            rfm_task_handle.state = 10;
-            rfm_ctrl.rec_msg_len = RH_RF95_MAX_MESSAGE_LEN-10;
-            break;
-        case 10:
-            if(rfm_ctrl.sub_task.get_role) 
-            {
-                Serial1.printf("<ROLE;%d>\n",rfm_ctrl.node_role);
-                rfm_ctrl.sub_task.get_role = false;
-            }
-            if(rfm_ctrl.sub_task.get_rssi) 
-            {
-                Serial1.printf("<RSSI;%d>\n",rfm_ctrl.rssi);
-                rfm_ctrl.sub_task.get_rssi = false;
-            }
-            if(rfm_ctrl.sub_task.get_msg) 
-            {
-                if(rfm_ctrl.reply_status ==  REPLY_REQUEST)
-                {
-                    //Serial1.println((char*)rfm_ctrl.rec_msg);
-
-                    // parser_radio_reply(uint8_t *msg , int rssi) // rfm_ctrl.rx_msg.field.from = rply_data.value[0];
-                    rfm_ctrl.rx_msg.field.rssi = rfm_ctrl.rssi;
-                    rfm_ctrl.rx_msg.field.base_nbr = rfm_ctrl.server_cntr;
-                    parser_get_reply(); // rfm_ctrl.rx_msg.field.from
-
-                    rfm_ctrl.reply_status =  REPLY_UNDEFINED;
-                }
-                else 
-                {
-                    Serial1.printf("<FAIL;0>\n",rfm_ctrl.rssi);
-                }
-                rfm_ctrl.sub_task.get_msg = false;
-            }
-            rfm_task_handle.state = 15;
-            break;
-        case 15:
-            if (rf95.available())
-            {
-                // Should be a message for us now   
-                if (rf95.recv(rfm_ctrl.rec_msg, &rfm_ctrl.rec_msg_len))
-                {
-                    rfm_ctrl.reply_status =  REPLY_REQUEST;
-                    rfm_ctrl.rssi = rf95.lastRssi();
-                    if(rfm_ctrl.rec_msg_len < RH_RF95_MAX_MESSAGE_LEN-1 )
-                    {
-                        rfm_ctrl.rec_msg[rfm_ctrl.rec_msg_len] = 0x00;
-                        //Serial1.println((char*)rfm_ctrl.rec_msg);
-                    }
-                    parser_radio_reply(rfm_ctrl.rec_msg, rfm_ctrl.rssi);
-                    rfm_ctrl.server_cntr++;
-
-
-                  rfm_ctrl.rssi = rf95.lastRssi(); 
-                  io_blink(COLOR_BLUE, BLINK_FAST_BLINK);
-                  Serial.print("got request: ");
-                  Serial.println((char*)rfm_ctrl.rec_msg);
-                  Serial.print("RSSI: ");
-                  Serial.println(rfm_ctrl.rssi, DEC);
-                  rfm_task_handle.state = 16;
-                  rfm_timeout = millis() + 100;
-                }
-                else 
-                {
-                  io_blink(COLOR_RED, BLINK_FAST_FLASH); 
-                  rfm_task_handle.state = 100;
-                }
-            }
-            break;
-        case 16:
-             if(millis() > rfm_timeout) rfm_task_handle.state = 20;
-            break;
-        case 20:
-            // Send a reply
-            sprintf(txt,"<RREP;%d;%d;%d;%d;%d;%d;%d;%d>",
-                rfm_ctrl.rx_msg.field.from,
-                rfm_ctrl.rx_msg.field.target,
-                rfm_ctrl.node_role,
-                rfm_ctrl.power,
-                rfm_ctrl.rssi,
-                rfm_ctrl.sf,
-                rfm_ctrl.rx_msg.field.remote_nbr,
-                rfm_ctrl.server_cntr
-                );
-            //rfm_send_str("<RREP;1;2;3;14;-77;12;33;444>");
-            rfm_send_str(txt);
-            //rfm_ctrl.send_msg_len = strlen(txt); 
-            //memcpy(rfm_ctrl.send_msg, txt, rfm_ctrl.send_msg_len);
-            //memcpy(rfm_ctrl.send_msg, "<RREP;1;2;3;14;-77;12;33;444>",RH_RF95_MAX_MESSAGE_LEN);
-            rf95.send(rfm_ctrl.send_msg, rfm_ctrl.send_msg_len);
-            rf95.waitPacketSent();
-            Serial.println("Sent a reply");
-            rfm_task_handle.state = 100;
-            break;
-        case 50:
-            Serial.println("recv failed");
-            rfm_task_handle.state = 100;
-            break;
-        case 100:
-            rfm_timeout = millis() + 100;
-            rfm_task_handle.state = 110;
-            break;
-        case 110:
-            if(millis() > rfm_timeout) 
-            {
-                io_blink(COLOR_BLUE, BLINK_OFF);
-                io_blink(COLOR_RED, BLINK_OFF);
-                rfm_task_handle.state = 10;
-            }    
-            break;
-
-    }
-}  
-void rfm_build_sensor_msg()
-{
-    //  <00;08;T-12.5;C007>
-    //   |  |  |      |_____ C counter 0 .. 999
-    //   |  |  |____________ T Temperature = -99.9 .. +99.9
-    //   |  | ______________ sender 0..99
-    //   | _________________ destination 0..99
+    //  <0;22;S2;T-12.5;H39;C007;#1234>
+    //   | |  |  |      |   |_____ C counter 0 .. 999
+    //   | |  |  |      |_________ H humidity 0 .. 99 (%)
+    //   | |  |  |________________ T Temperature = -99.9 .. +99.9
+    //   | |  |___________________ S Sensor type 1 .. 9
+    //   | |______________________ sender 0..99
+    //   | _______________________ destination 0..99
     //
+    //  <0;22;S2;T-12.5;H39;C007>
+    //  <0;22;S4;T18.7;C008>
+
+
     //  <00;42;T24.9;C002>
     //  <0;42;T25.3;C2>
 
-
-    sprintf( rfm_ctrl.buff,"<%d;%d;T%.1f;C%d>",
-        sensor_msg.target,
-        sensor_msg.sender,
-        sensor_msg.temperature,
-        sensor_msg.counter
-    );
-
-
-}
-
-void loop_sensor(void)
-{
-    switch(rfm_task_handle.state)
-    {
-        case 0:
-            rfm_task_handle.state = 10;
+    switch(sindx){
+        case SENSOR_TYPE_BMP180:
+            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;C%d;#180>",
+                sensor_msg.target,
+                sensor_msg.sender,
+                sindx,
+                sensor[sindx].temperature,
+                sensor[sindx].meta.counter
+            );
             break;
-        case 10:    
-            if ((sensor.bmp180.meta.active) &&
-                (sensor.bmp180.meta.updated))
-            {
-                sensor_msg.temperature = sensor.bmp180.temperature;
-                sensor.bmp180.meta.updated = false;
-                rfm_task_handle.state = 20;
-            }
+        case SENSOR_TYPE_BMP280:
+            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;C%d;#180>",
+                sensor_msg.target,
+                sensor_msg.sender,
+                sindx,
+                sensor[sindx].temperature,
+                sensor[sindx].meta.counter
+            );
+            break;
+        case SENSOR_TYPE_BME680:
+            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;H%d;C%d;#680>",
+                sensor_msg.target,
+                sensor_msg.sender,
+                sindx,
+                sensor[sindx].temperature,
+                sensor[sindx].humidity,
+                sensor[sindx].meta.counter
+            );
+            break;
+        case SENSOR_TYPE_AHT20:
+            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;H%d;C%d;#20>",
+                sensor_msg.target,
+                sensor_msg.sender,
+                sindx,
+                sensor[sindx].temperature,
+                sensor[sindx].humidity,
+                sensor[sindx].meta.counter
+            );
+            break;
+        case SENSOR_TYPE_SHT21:
+            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;H%d;C%d;#21>",
+                sensor_msg.target,
+                sensor_msg.sender,
+                sindx,
+                sensor[sindx].temperature,
+                sensor[sindx].humidity,
+                sensor[sindx].meta.counter
+            );
+            break;
+        case SENSOR_TYPE_DS18B20:
+            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;C%d;#1820>",
+                sensor_msg.target,
+                sensor_msg.sender,
+                sindx,
+                sensor[sindx].temperature,
+                sensor[sindx].meta.counter
+            );
+            break;
+        case SENSOR_TYPE_PIR:
             break;
 
-        case 20:
-            if(millis() > sensor.bmp180.meta.next_send){
-                sensor_msg.next_send = millis() + INTERVAL_SEND_TEMP;
-                rfm_task_handle.state = 30;
-            }
-            break;
-        case 30:
-            alpha_show_str4_event("Send",2000,false);
-            sensor_msg.counter++;
-            rfm_build_sensor_msg();
-            rfm_send_str(rfm_ctrl.buff);
-            Serial.printf("Radiating: %s\n",rfm_ctrl.buff);
-            rfm_ctrl.timeout = millis() + 1000;
-            rfm_task_handle.state = 40;
-            break;
-        case 40:
-            if (millis() > rfm_ctrl.timeout) {
-                alpha_show_integer_event(sensor_msg.counter,2000,false);
-                rfm_task_handle.state = 10;
-            } 
-            break;
     }
+
 }
 
 
 void rfm_task(void)
-{   
-    //Serial.print("-");
-    //Serial1.print("|");
-
-    loop_sensor();
-
-    // switch(rfm_ctrl.node_role)
-    // {
-    //     case NODE_ROLE_CLIENT:
-    //         loop_client();
-    //         break;
-    //     case NODE_ROLE_SERVER:
-    //         loop_server();
-    //         break;
-    //     default:
-    //         Serial.print("No radio role defined");
-    //     break;
-
-    // }
+{
+    switch(rfm_task_handle.state)
+    {
+        case 0:
+            rfm_task_handle.state = 10;
+            rfm_ctrl.sensor_indx = 0;
+            break;
+        case 10:    
+            if ((sensor[rfm_ctrl.sensor_indx].meta.active) &&
+                (sensor[rfm_ctrl.sensor_indx].meta.updated) &&
+                (millis() > sensor[rfm_ctrl.sensor_indx].meta.next_send))
+            {
+                rfm_build_sensor_msg(rfm_ctrl.sensor_indx);
+                rfm_send_str(rfm_ctrl.buff);
+                sensor[rfm_ctrl.sensor_indx].meta.updated = false;
+                sensor[rfm_ctrl.sensor_indx].meta.next_send = millis() + INTERVAL_SEND_TEMP;
+                rfm_task_handle.state = 20;
+            }
+            else rfm_task_handle.state = 100;
+            break;
+        case 20:
+            alpha_show_str4_event("Send",2000,false);
+            rfm_ctrl.timeout = millis() + 5000;
+            rfm_task_handle.state = 30;
+            break;
+        case 30:
+            if (millis() > rfm_ctrl.timeout) {
+                alpha_show_integer_event(sensor[rfm_ctrl.sensor_indx].meta.counter,2000,false);
+                rfm_ctrl.timeout = millis() + 4000;
+                rfm_task_handle.state = 40;
+            } 
+            break;
+        case 40:
+            if(millis() > rfm_ctrl.timeout) rfm_task_handle.state = 100;
+            break;
+        case 100:
+            if(++rfm_ctrl.sensor_indx >= SENSOR_TYPE_NBR_OF) rfm_ctrl.sensor_indx = 0;
+            rfm_task_handle.state = 10;
+            break;
+    }
 }
+
 
 
