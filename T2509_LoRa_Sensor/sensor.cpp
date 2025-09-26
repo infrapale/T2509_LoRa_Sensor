@@ -90,10 +90,10 @@ sensor_st sensor[SENSOR_TYPE_NBR_OF] =
 
 sensor_test_st sensor_test[NBR_TEST_SENSOR] =
 {
-    {.sender=12, .sensor=SENSOR_TYPE_BMP180,.interval=22000, .next_send=0, .temp=14.0, .min_temp=4.0, .max_temp=38.0, .delta_temp=2.0, .going_up=false},
-    {.sender=18, .sensor=SENSOR_TYPE_BMP280,.interval=37000, .next_send=0, .temp=4.0,  .min_temp=4.0, .max_temp=38.0, .delta_temp=2.0, .going_up=true},
-    {.sender=24, .sensor=SENSOR_TYPE_AHT20,.interval=61000,  .next_send=0, .temp=10.0, .min_temp=4.0, .max_temp=38.0, .delta_temp=1.0, .going_up=false},
-    {.sender=10, .sensor=SENSOR_TYPE_SHT21,.interval=120000, .next_send=0, .temp=-1.0, .min_temp=-4.0, .max_temp=18.0, .delta_temp=2.0, .going_up=false},
+    {.sender=12, .sensor=SENSOR_TYPE_BMP180,.interval=22000, .temp=14.0, .min_temp=4.0, .max_temp=38.0, .delta_temp=2.0, .going_up=false},
+    {.sender=18, .sensor=SENSOR_TYPE_BMP280,.interval=37000, .temp=4.0,  .min_temp=4.0, .max_temp=38.0, .delta_temp=2.0, .going_up=true},
+    {.sender=24, .sensor=SENSOR_TYPE_AHT20,.interval=61000,  .temp=10.0, .min_temp=4.0, .max_temp=38.0, .delta_temp=1.0, .going_up=false},
+    {.sender=10, .sensor=SENSOR_TYPE_SHT21,.interval=120000, .temp=-1.0, .min_temp=-4.0, .max_temp=18.0, .delta_temp=2.0, .going_up=false},
 };
 
 

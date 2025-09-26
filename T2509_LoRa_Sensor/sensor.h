@@ -52,7 +52,6 @@ typedef struct
     uint8_t     sender;
     uint8_t     sensor;
     uint32_t    interval;
-    uint32_t    next_send;
     float       temp;
     float       min_temp;
     float       max_temp;

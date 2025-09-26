@@ -92,7 +92,7 @@ void alpha_show_int(uint16_t ival)
     // itoa(ival,buff,10);
     sprintf(buff,"%04d",ival);
     alpha_show_str(buff);
-    Serial.print("alpha_show_int() ");Serial.println(buff);
+    //Serial.print("alpha_show_int() ");Serial.println(buff);
 
 }
 
