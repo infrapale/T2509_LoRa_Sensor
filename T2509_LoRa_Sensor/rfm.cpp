@@ -138,25 +138,8 @@ void fix_serial1(void)
 }
 
 
-//void rfm_build_test_message()
-
 void rfm_build_sensor_msg(uint8_t sindx)
-{
-    //  <0;22;S2;T-12.5;H39;C007;#1234>
-    //   | |  |  |      |   |_____ C counter 0 .. 999
-    //   | |  |  |      |_________ H humidity 0 .. 99 (%)
-    //   | |  |  |________________ T Temperature = -99.9 .. +99.9
-    //   | |  |___________________ S Sensor type 1 .. 9
-    //   | |______________________ sender 0..99
-    //   | _______________________ destination 0..99
-    //
-    //  <0;22;S2;T-12.5;H39;C007>
-    //  <0;22;S4;T18.7;C008>
-
-
-    //  <00;42;T24.9;C002>
-    //  <0;42;T25.3;C2>
-
+{ 
     switch(sindx){
         case SENSOR_TYPE_BMP180:
             sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;C%d;#180>",

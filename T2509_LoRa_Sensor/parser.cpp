@@ -158,68 +158,6 @@ void parser_print_data(msg_data_st *msg_data)
 }
 
 
-void parser_radio_reply(uint8_t *msg , int rssi)
-{
-    String RplyStr;
-    msg_status_et rply_status = STATUS_UNDEFINED;
-
-    RplyStr = (char*)msg;
-    rply_status = parse_frame(&RplyStr);
-    Serial.print("Parsing radio reply:");
-    Serial.print(" Status= "); Serial.print(rply_status); 
-    Serial.print(" Message= "); Serial.println(RplyStr);
-    parser_rd_msg_values(&rply_data, &RplyStr);
-    parser_print_data(&rply_data);
-
-    rfm_ctrl.rx_msg.field.from           = rply_data.value[0];
-    rfm_ctrl.rx_msg.field.target         = rply_data.value[1];
-    rfm_ctrl.rx_msg.field.radio          = rply_data.value[2];
-    rfm_ctrl.rx_msg.field.power          = rply_data.value[3];
-    rfm_ctrl.rx_msg.field.rssi           = rply_data.value[4];
-    rfm_ctrl.rx_msg.field.sf             = rply_data.value[5];
-    rfm_ctrl.rx_msg.field.remote_nbr     = rply_data.value[6];
-    rfm_ctrl.rx_msg.field.base_nbr       = rply_data.value[7];
-    
-    rfm_ctrl.rx_msg.avail    = true;
-    rfm_ctrl.rx_msg.status   = STATUS_AVAILABLE;
-}
-
-void parser_get_reply(void)
-{
-    if(rfm_ctrl.rx_msg.avail)
-    {
-        Serial1.printf("<REPL;%d;%d;%d;%d;%d;%d;%d;%d>\n",
-            rfm_ctrl.rx_msg.field.from,
-            rfm_ctrl.rx_msg.field.start,
-            rfm_ctrl.rx_msg.field.radio,
-            rfm_ctrl.rx_msg.field.power,
-            rfm_ctrl.rx_msg.field.rssi,
-            rfm_ctrl.rx_msg.field.sf,
-            rfm_ctrl.rx_msg.field.remote_nbr,
-            rfm_ctrl.rx_msg.field.base_nbr);
-        rfm_ctrl.rx_msg.avail = false;
-    }
-    else
-    {
-        Serial1.printf("<FAIL;%d>\n",0);
-    }
-
-}
-
-// Get own RSSI
-void parser_get_rssi(void)
-{
-    if(rfm_ctrl.rx_msg.avail)
-    {
-        Serial1.printf("<RSSI;%d>\n",rfm_ctrl.rssi);
-        Serial.printf("<RSSI;%d>\n",rfm_ctrl.rssi);
-    }
-    else
-    {
-        Serial1.printf("<FAIL;%d>\n",0);
-    }
-}
-
 // Get own Role
 void parser_get_role(void)
 {
@@ -234,14 +172,6 @@ void parser_get_role(void)
 void parser_get_msg(void)
 {
     rfm_ctrl.sub_task.get_msg = true;
-}
-
-void parser_get_cntr(void)
-{
-    if(rfm_ctrl.node_role == NODE_ROLE_CLIENT)
-        Serial1.printf("<CNTR;%d>\n",rfm_ctrl.client_cntr);
-    else
-        Serial1.printf("<CNTR;%d>\n",rfm_ctrl.server_cntr);
 }
 
 
@@ -282,19 +212,16 @@ void parser_exec_command(msg_st *msg, msg_data_st *msg_data)
                 rfm_set_sf(msg_data->value[0]);
                 break;
             case CMD_RADIO_REPLY:
-                parser_get_reply();
+                //parser_get_reply();
                 break;
             case CMD_GET_RSSI:
-                parser_get_rssi(); 
+                //parser_get_rssi(); 
                 break;   
             case CMD_GET_ROLE:
                 parser_get_role(); 
                 break;   
             case CMD_GET_MSG:
                 parser_get_msg(); 
-                break;   
-            case CMD_GET_CNTR:
-                parser_get_cntr(); 
                 break;   
             case CMD_SET_MODEM_CONF:
                 Serial.printf("Set Modem Conf: %d", msg_data->value[0]);

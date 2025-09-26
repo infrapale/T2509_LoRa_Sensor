@@ -73,16 +73,16 @@ void setup()
   if(main_ctrl.test_activated) Serial.println("Test Mode is Activated");
   if ((sw_bm & SW_BM_ROLE) != 0)  
   {
-    Serial.print("Client ");
+    //Serial.print("Client ");
     main_ctrl.node_role = NODE_ROLE_CLIENT;
   }
   else 
   {
-    Serial.print("Server ");
+    //Serial.print("Server ");
     main_ctrl.node_role = NODE_ROLE_SERVER;
   }  
   main_ctrl.node_addr =  sw_bm & SW_BM_ADDR;
-  Serial.printf("Node Address %d\n", main_ctrl.node_addr);
+  //Serial.printf("Node Address %d\n", main_ctrl.node_addr);
 
   alpha_initialize();
   rfm_initialize(main_ctrl.node_role); 

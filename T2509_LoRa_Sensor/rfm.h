@@ -83,8 +83,6 @@ typedef struct
     float           frequency;
     RH_RF95::ModemConfigChoice  modem_conf;
     uint8_t         sf;
-    uint16_t        client_cntr;
-    uint16_t        server_cntr;
     uint8_t         tindx;
     atask_st        *taskp;
     uint32_t        tatio;  

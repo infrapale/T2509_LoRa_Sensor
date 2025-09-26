@@ -4,20 +4,6 @@
 #define CMD_TAG_LEN     5
 #define CMD_MAX_VALUES  10
 
-typedef enum
-{
-  FIELD_START   = 0,
-  FIELD_COMMAND,
-  FIELD_FROM,
-  FIELD_TARGET,
-  FIELD_RADIO,
-  FIELD_POWER,
-  FIELD_SPREADING_FACTOR,
-  FIELD_REMOTE_NBR,
-  FIELD_BASE_NBR,
-  FILED_END,
-  FIELD_NBR_OF
-} field_et;
 
 typedef enum
 {
@@ -45,21 +31,6 @@ typedef enum
   RADIO_RFM69_868 = 4,
 } radio_et;
 
-typedef enum
-{
-  RX_MSG_SEND_REMOTE_TO_BASE,
-  RX_MSG_RESET_CNTR,
-  RX_MSG_,
-  RX_MSG_NBR_OF
-} rx_msg_et;
-
-typedef enum
-{
-  TX_MSG_SEND_REMOTE_TO_BASE,
-  TX_MSG_RESET_CNTR,
-  TX_MSG_,
-  TX_MSG_NBR_OF
-} tx_msg_et;
 
 typedef enum
 {
@@ -95,8 +66,7 @@ typedef struct
 } parser_ctrl_st;
 
 void parser_initialize(void);
-void parser_radio_reply(uint8_t *msg , int rssi);
-void parser_get_reply(void);
+
 
 
 #endif
