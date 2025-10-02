@@ -67,6 +67,8 @@ typedef struct
 
 void parser_initialize(void);
 
+msg_status_et parse_frame(String *Str);
+
 
 
 #endif

@@ -50,10 +50,6 @@ void setup()
   Serial1.begin(9600);
   Serial2.begin(9600);
 
-parse_frame
-3 results in 2 files
-1
-2
 
   Wirep = &Wire;
   Wirep->setSDA(PIN_I2C_SDA);
