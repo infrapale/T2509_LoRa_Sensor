@@ -160,7 +160,7 @@ void rfm_build_sensor_msg(uint8_t sindx)
             );
             break;
         case SENSOR_TYPE_BME680:
-            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;H%d;C%d;#680>",
+            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;H%.0f;C%d;#680>",
                 sensor_msg.target,
                 sensor_msg.sender,
                 sindx,
@@ -170,7 +170,7 @@ void rfm_build_sensor_msg(uint8_t sindx)
             );
             break;
         case SENSOR_TYPE_AHT20:
-            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;H%d;C%d;#20>",
+            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;H%.0f;C%d;#20>",
                 sensor_msg.target,
                 sensor_msg.sender,
                 sindx,
@@ -180,7 +180,7 @@ void rfm_build_sensor_msg(uint8_t sindx)
             );
             break;
         case SENSOR_TYPE_SHT21:
-            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;H%d;C%d;#21>",
+            sprintf( rfm_ctrl.buff,"<%d;%d;S%d;T%.1f;H%.0f;C%d;#21>",
                 sensor_msg.target,
                 sensor_msg.sender,
                 sindx,
@@ -223,6 +223,8 @@ void rfm_task(void)
                 rfm_send_str(rfm_ctrl.buff);
                 sensor[rfm_ctrl.sensor_indx].meta.updated = false;
                 sensor[rfm_ctrl.sensor_indx].meta.next_send = millis() + INTERVAL_SEND_TEMP;
+                if(++sensor[rfm_ctrl.sensor_indx].meta.counter >= 9999) 
+                    sensor[rfm_ctrl.sensor_indx].meta.counter = 0;
                 rfm_task_handle.state = 20;
             }
             else rfm_task_handle.state = 100;

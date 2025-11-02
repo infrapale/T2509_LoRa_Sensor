@@ -9,7 +9,7 @@
 #define UNIT_LABEL_LEN      10
 #define MEASURE_LABEL_LEN   16
 
-#define APP_NAME   "T2509_LoRa_Sensor"
+#define APP_NAME            "T2509_LoRa_Sensor"
 #define SW_BM_TEST          0b00001000
 #define SW_BM_ROLE          0b00000100
 #define SW_BM_ADDR_1        0b00000010
@@ -26,10 +26,10 @@
 
 //#define SENSOR_BMP180
 //#define SENSOR_BMP280
-#define SENSOR_AHT20
-//#define SENSOR_SHT31
+//#define SENSOR_AHT20
+#define SENSOR_SHT31
 
-#define TEST_MODE
+#undef TEST_MODE
 #define I2C_ADDR_ALPHANUM       0x70
 
 

@@ -7,13 +7,14 @@
 #define BOARD_PROTO_PICO_RFM95          2
 #define BOARD BOARD_T2504_PICO_RFM95_80x70 
 
-#define PIN_WIRE_SDA        (12u)
-#define PIN_WIRE_SCL        (13u)
+#define PIN_WIRE_SDA        (4u)
+#define PIN_WIRE_SCL        (5u)
 #define PIN_UART0_TX        (0u)
 #define PIN_UART0_RX        (1u)
 #define PIN_UART1_TX        (8u)
 #define PIN_UART1_RX        (9u)
 
+#define PIN_ONE_WIRE        (3u)
 
 #if BOARD == BOARD_T2504_PICO_RFM95_80x70
 #define PIN_RFM_MOSI        (19u)

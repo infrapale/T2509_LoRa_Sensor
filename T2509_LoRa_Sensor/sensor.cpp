@@ -1,6 +1,7 @@
 #include "Arduino.h"
 #include "sensor.h"
 #include "main.h"
+#include "io.h"
 #include "atask.h"
 //#include <Adafruit_BMP280.h>
 #include <Adafruit_Sensor.h>
@@ -9,6 +10,9 @@
 #include "Adafruit_BME680.h"
 #include <Adafruit_AHTX0.h>
 #include "Adafruit_SHT31.h"
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
 #include "alpha.h"
 #include "rfm.h"
 
@@ -42,7 +46,8 @@ Adafruit_BMP280 bmp280;
 Adafruit_BME680 bme680(Wirep); 
 Adafruit_AHTX0 aht20;
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
-
+OneWire oneWire(PIN_ONE_WIRE);
+DallasTemperature ds18b20(&oneWire);
 
 // #define I2C_ADDR_BMP180         0x77
 // #define I2C_ADDR_BMP280         0x11
@@ -79,7 +84,7 @@ sensor_st sensor[SENSOR_TYPE_NBR_OF] =
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
     [SENSOR_TYPE_DS18B20] = {
-            .meta = {.label= "DS18B20", .i2c_addr = 0x00, .active=false, .updated=false, .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
+            .meta = {.label= "DS18B20", .i2c_addr = 0x00, .active=true, .updated=false, .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
     [SENSOR_TYPE_PIR] = {
@@ -114,7 +119,8 @@ void sensor_initialize(void)
             }
         }
     }
-    
+    ds18b20.begin();
+    float tempC;
     for (uint8_t sindx = 0; sindx < SENSOR_TYPE_NBR_OF; sindx++ ){
         if (sensor[sindx].meta.active){
             switch (sindx){
@@ -142,9 +148,15 @@ void sensor_initialize(void)
                 case SENSOR_TYPE_SHT21:
                     status = sht31.begin(sensor[SENSOR_TYPE_SHT21].meta.i2c_addr);
                     Serial.print("SHT21 Heater is ");
-                    (sht31.isHeaterEnabled()) ? Serial.println("Enabled") : printf("Disabled");
+                    (sht31.isHeaterEnabled()) ? Serial.println("Enabled") : Serial.println("Disabled");
                     break;
                 case SENSOR_TYPE_DS18B20:
+                    ds18b20.requestTemperatures();
+                    delay(1500);
+                    tempC = ds18b20.getTempCByIndex(0);
+                    if (tempC != DEVICE_DISCONNECTED_C) status = true;
+                    else status = false;
+                    ds18b20.requestTemperatures();
                     break;
                 case SENSOR_TYPE_PIR:
                     break;
@@ -218,6 +230,17 @@ void sensor_read_values(uint8_t sindx)
             if (isnan(fval)) read_ok = false; else sensor[sindx].humidity = fval;
             break;
         case SENSOR_TYPE_DS18B20:
+            fval = ds18b20.getTempCByIndex(0);
+            if (fval != DEVICE_DISCONNECTED_C)
+            {
+                Serial.printf("DS18B20 Temp: %.1f\n",fval);
+                sensor[sindx].temperature = fval;
+            }
+            else
+            {
+                Serial.println("Error: Could not read DS18B20");
+            }
+            ds18b20.requestTemperatures();  // for next reading
             break;
         case SENSOR_TYPE_PIR:
             break;
@@ -226,7 +249,7 @@ void sensor_read_values(uint8_t sindx)
     sensor[sindx].meta.next_meas = millis() + INTERVAL_READ_SENSOR;
     if (read_ok) {
         sensor[sindx].meta.updated = true;
-        if(++sensor[sindx].meta.counter > 9999) sensor[sindx].meta.counter = 0;   
+        // if(++sensor[sindx].meta.counter > 9999) sensor[sindx].meta.counter = 0;   
         if(sensor[sindx].meta.show_temperature){
             alpha_show_float_event(sensor[sindx].temperature, 5000, true);
         } 
