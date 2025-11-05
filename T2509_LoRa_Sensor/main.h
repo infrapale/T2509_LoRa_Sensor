@@ -2,7 +2,7 @@
 #define __MAIN_H__
 
 //#define LORA_CLIENT
-#define LORA_SERVER
+//#define LORA_SERVER
 
 #define LABEL_LEN           12
 #define TIME_ZONE_OFFS      3
@@ -24,11 +24,6 @@
 #define ADDR_TARGET             0
 #define ADDR_SENDER             42
 
-//#define SENSOR_BMP180
-//#define SENSOR_BMP280
-//#define SENSOR_AHT20
-#define SENSOR_SHT31
-
 #undef TEST_MODE
 #define I2C_ADDR_ALPHANUM       0x70
 
@@ -36,23 +31,14 @@
 #define INTERVAL_READ_SENSOR    10000
 #define INTERVAL_SEND_TEMP      30000
 
-typedef enum
-{
-    NODE_ROLE_UNDEFINED = 0,
-    NODE_ROLE_CLIENT,
-    NODE_ROLE_SERVER,
-    NODE_ROLE_SENSOR,
-    NODE_ROLE_NBR_OF
-} node_role_et;
-
 
 typedef struct 
 {
-    uint8_t      node_addr;
-    node_role_et node_role;
-    bool         test_activated;
-    bool         io_initialized;
-    uint8_t      serial_reserved;
+    uint8_t         node_addr;
+    bool            test_activated;
+    bool            io_initialized;
+    bool            debug_mode;
+    bool            watchdog;
 } main_ctrl_st;
 
 

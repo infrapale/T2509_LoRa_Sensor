@@ -6,12 +6,6 @@
 
 typedef struct
 {
-  uint8_t pin;
-  uint32_t pattern;
-} led_st;
-
-typedef struct
-{
   uint8_t pattern_bit;
   uint8_t switches;
   uint8_t tindx;
@@ -19,102 +13,101 @@ typedef struct
 
 io_ctrl_st io_ctrl;
 
-led_st led[COLOR_NBR_OF] =
-{
-    {PIN_LED_RED, 0},
-    {PIN_LED_GREEN, 0},
-    {PIN_LED_BLUE, 0},
-};
 
-const uint32_t led_pattern[BLINK_NBR_OF] = 
-{
-    0b0000000000000000,
-    0b1111111111111111,
-    0b1000000000000000,
-    0b1000000100000000,
-    0b1001001001001000,
-    0b1111111100000000,
-    0b1111000011110000,
-    0b1100110011001100,
-    0b1111000000100000,
-    0b1111000010001000,
-    0b1111001010101010,
-    0b1111001100110000,
-
-
-};
-
-const uint8_t sw_pin[4] = {PIN_SW1, PIN_SW2, PIN_SW3, PIN_SW4};
-
-void io_task(void);
-//                                  123456789012345   ival  next  state  prev  cntr flag  call backup
-atask_st io_task_handle       =   {"I/O Task       ", 100,     0,     0,  255,    0,  1,  io_task };
+const uint8_t sw_pin[8] = 
+  {PIN_SW1, PIN_SW2, PIN_SW3, PIN_SW4, PIN_SW5, PIN_SW6, PIN_ENABLE_WATCHDOG, PIN_ENABLE_TEST_MODE};
 
 void io_initialize(void)
 {
   analogReadResolution(12);
+  pinMode(PIN_PIR, INPUT_PULLUP);
+  for (uint8_t i = 0; i < 8; i++) pinMode(sw_pin[i], INPUT_PULLUP);
+
   //RFM95 Reset
   pinMode(PIN_RFM_RESET, OUTPUT);
   digitalWrite(PIN_RFM_RESET, HIGH);
-  pinMode(PIN_I2C_PWR, OUTPUT);
-
-  #if BOARD == BOARD_T2504_PICO_RFM95_80x70
+  pinMode(PIN_RFM_CS, OUTPUT);
+  digitalWrite(PIN_RFM_CS, HIGH);
   
-  io_ctrl.pattern_bit = 0;
-  for (uint8_t i = COLOR_RED; i <= COLOR_BLUE; i++)
-  {
-    pinMode(led[i].pin, OUTPUT);
-    digitalWrite(led[i].pin, LOW);
-  } 
-  #endif
+  pinMode(PIN_EN_VSYSX, OUTPUT);
+  pinMode(PIN_LDR, INPUT);
+  pinMode(PIN_EN_3V3X, OUTPUT);
+  pinMode(PIN_RST_412, OUTPUT);
 
-  io_i2c_pwr(true);
-  Wire.setSDA(PIN_I2C_SDA);
-  Wire.setSCL(PIN_I2C_SCL);
+  pinMode(LED_BUILTIN, OUTPUT); // Set onboard LED pin as output
+
+
+  digitalWrite(PIN_EN_VSYSX, LOW);  // Low == enable
+  digitalWrite(PIN_EN_3V3X, LOW);   // Low == enable
+  digitalWrite(PIN_RST_412, HIGH);  // Low == reset ATTiny412
+
+  io_pwr_sensor(true);
+  Wire.setSDA(PIN_I2C0_SDA);
+  Wire.setSCL(PIN_I2C0_SCL);
+  Wire1.setSDA(PIN_I2C1_SDA);
+  Wire1.setSCL(PIN_I2C1_SCL);
 
 }
-void io_task_initialize(void)
-{
-    //io_ctrl.tindx =  atask_add_new(&io_task_handle);
-}
 
-uint8_t io_get_switch_bm(void)
+uint8_t io_get_addr(void)
 {
     io_ctrl.switches = 0b00000000;
-    #if BOARD == BOARD_T2504_PICO_RFM95_80x70
-    for (uint8_t i=0; i < 4; i++) pinMode(sw_pin[i], INPUT_PULLUP);
+    #if BOARD == BOARD_LORA_SENSOR
     delay(20);
-    for (uint8_t i=0; i < 4; i++)
+    for (uint8_t i=0; i < 6; i++)
     {
-        if (digitalRead(sw_pin[i]) == HIGH) io_ctrl.switches |= (1 << i);
+        if (digitalRead(sw_pin[i]) == LOW) io_ctrl.switches |= (1 << i);
     }     
     #endif
     return io_ctrl.switches;
 }
 
-void io_blink(uint8_t color, blink_et bindx)
+bool io_get_debug_mode(void)
 {
-  led[color].pattern = led_pattern[bindx];
+    return (digitalRead(PIN_ENABLE_TEST_MODE) == LOW);
 }
+
+bool io_get_watchdog(void)
+{
+    return (digitalRead(PIN_ENABLE_WATCHDOG) == LOW);
+}
+
 
 void io_task(void)
 {
-
-  #if BOARD == BOARD_T2504_PICO_RFM95_80x70
-  uint32_t patt = 1UL << io_ctrl.pattern_bit;
-  for (uint8_t i = COLOR_RED; i <= COLOR_BLUE; i++)
-  {
-    if ((led[i].pattern & patt) != 0)
-        digitalWrite(led[i].pin, HIGH);
-    else  
-        digitalWrite(led[i].pin, LOW);
-  } 
-  if (++io_ctrl.pattern_bit >= 16) io_ctrl.pattern_bit = 0;
-  #endif
 }
 
-void io_i2c_pwr(bool pwr_on)
+void io_set_onboard_led(bool is_on)
 {
-    if(pwr_on) digitalWrite(PIN_I2C_PWR, LOW);
-    else digitalWrite(PIN_I2C_PWR, HIGH);
+    if(is_on) digitalWrite(LED_BUILTIN, HIGH);
+    else digitalWrite(LED_BUILTIN, LOW);
 }
+void io_pwr_sensor(bool pwr_on)
+{
+    // Can also be controlled by the ATTiny412 module
+    if(pwr_on) digitalWrite(PIN_EN_3V3X, LOW);
+    else digitalWrite(PIN_EN_3V3X, HIGH);
+}
+void io_pwr_vsysx(bool pwr_on)
+{
+    if(pwr_on) digitalWrite(PIN_EN_VSYSX, LOW);
+    else digitalWrite(PIN_EN_VSYSX, HIGH);
+}
+
+void io_reset_412(void)
+{
+    digitalWrite(PIN_RST_412, LOW);
+    delay(100);
+    digitalWrite(PIN_RST_412, HIGH);
+}
+
+bool io_pir_detected(void)
+{
+    return (digitalRead(PIN_PIR) == 1);
+}
+
+uint16_t io_read_ldr(void)
+{
+    return analogRead(PIN_LDR);
+}
+

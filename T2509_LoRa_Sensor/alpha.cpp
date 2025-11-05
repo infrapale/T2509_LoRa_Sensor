@@ -8,6 +8,7 @@
 
 
 extern TwoWire *Wirep;
+extern main_ctrl_st main_ctrl;
 
 void alpha_task(void);
 
@@ -45,7 +46,7 @@ void alpha_initialize(void) {
     alpha_show_str4_event("LoRa",5000,false);
     delay(2000);
     char buff[6] = {0};
-    sprintf(buff,"@%3d",ADDR_SENDER);
+    sprintf(buff,"@%3d", main_ctrl.node_addr);
     alpha_show_str4_event(buff,4000,false);
     delay(4000);
 }

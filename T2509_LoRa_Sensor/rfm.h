@@ -4,9 +4,10 @@
 #include <RH_RF95.h>
 #include "main.h"
 #include "atask.h"
-#include "parser.h"
+
 
 #define NBR_OF_MODEM_CONF   5
+#define CMD_TAG_LEN         5
 
 
 typedef enum
@@ -25,6 +26,17 @@ typedef enum
     REPLY_ACK,
     REPLY_NBR_OF
 } reply_et;
+
+typedef enum
+{
+  STATUS_UNDEFINED = 0,
+  STATUS_AVAILABLE,
+  STATUS_OK_FOR_ME,
+  STATUS_INCORRECT_FRAME,
+} msg_status_et;
+
+
+
 
 typedef struct
 {
@@ -77,7 +89,7 @@ typedef struct
     msg_st          tx_msg;
     msg_st          rx_msg;
     uint8_t         node_addr;
-    node_role_et    node_role;
+    //node_role_et    node_role;
     int             rssi;
     int8_t          power;
     float           frequency;
@@ -100,7 +112,7 @@ typedef struct
     uint16_t rec_cntr;
 } client_msg_st;
 
-void rfm_initialize(node_role_et node_role);
+void rfm_initialize(void);
 
 void rfm_task_initilaize(void);
 

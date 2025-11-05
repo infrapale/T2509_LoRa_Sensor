@@ -21,6 +21,9 @@ typedef struct
 {
     uint8_t     sensor_indx;
     uint32_t    timeout;
+    uint16_t    pir_state;
+    uint16_t    pir_cntr;
+    bool        pir_is_active;
 } sensor_ctrl_st;
 
 
@@ -260,6 +263,29 @@ void sensor_read_values(uint8_t sindx)
 
 }
 
+void sensor_pir_state_machine(void)
+{
+    switch (sensor_ctrl.pir_state)
+    {
+        case 0:
+            sensor_ctrl.pir_cntr = 0;
+            sensor_ctrl.pir_state = 10;
+            break;
+        case 10:
+            if(io_pir_detected())
+            sensor_ctrl.pir_state = 20;
+            break;
+        case 20:
+            if(!io_pir_detected())
+            {
+                if(++sensor_ctrl.pir_cntr > 999) sensor_ctrl.pir_cntr = 0 ;
+                sensor_ctrl.pir_state = 10;
+                sensor_ctrl.pir_is_active = true;
+            }
+            break;
+    }
+}
+
 
 void sensor_task(void)
 {
@@ -281,7 +307,9 @@ void sensor_task(void)
             }                     
             break;
         case 20:
-            if (millis() > sensor_ctrl.timeout) sensor_handle.state = 100;
+            if (millis() > sensor_ctrl.timeout){
+                sensor_handle.state = 100;
+            } 
             break;
         case 100:
             if(sensor_ctrl.sensor_indx < SENSOR_TYPE_NBR_OF-1) sensor_ctrl.sensor_indx++;

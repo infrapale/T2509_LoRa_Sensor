@@ -10,16 +10,12 @@ https://www.airspayce.com/mikem/arduino/RadioHead/
 #include "main.h"
 #include "io.h"
 #include "rfm.h"
-#include "parser.h"
 #include "sensor.h"
 #include "alpha.h"
 
 
 // Singleton instance of the radio driver
-//RH_RF95 rf95;
 RH_RF95 rf95(PIN_RFM_CS, PIN_RFM_IRQ );
-//RH_RF95 rf95(5, 2); // Rocket Scream Mini Ultra Pro with the RFM95W
-//RH_RF95 rf95(8, 3); // Adafruit Feather M0 with RFM95 
 
 rfm_ctrl_st rfm_ctrl = {0};
 extern main_ctrl_st main_ctrl;
@@ -35,7 +31,6 @@ rfm_sensor_msg_st sensor_msg = {
 //                                  123456789012345   ival  next  state  prev  cntr flag  call backup
 atask_st rfm_task_handle      =  {"RFM Task       ", 10,    0,     0,  255,    0,  1,  rfm_task };
 
-//rf95.ModemConfigChoice modem_config[1] = {Bw125Cr45Sf128}; 
 RH_RF95::ModemConfigChoice modem_config[NBR_OF_MODEM_CONF] = 
 {
 	rf95.Bw125Cr45Sf128,	   ///< Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Default medium range
@@ -45,25 +40,23 @@ RH_RF95::ModemConfigChoice modem_config[NBR_OF_MODEM_CONF] =
 	rf95.Bw125Cr45Sf2048       ///< Bw = 125 kHz, Cr = 4/5, Sf = 2048chips/symbol, CRC on. Slow+long range
 };
 
-void rfm_initialize(node_role_et node_role)
+void rfm_initialize(void)
 {
-
     rfm_ctrl.rx_msg.avail = false;
     if (rf95.init())
     {
-        rfm_ctrl.node_role = node_role;
         rfm_set_frequency(867.5);
         rfm_set_power(14);
         rfm_set_modem_conf(0);
     }
     else
     {
-        rfm_ctrl.node_role = NODE_ROLE_UNDEFINED;
         Serial.println("init failed");
-    }
+    }  
     rfm_ctrl.rec_msg_len    = sizeof(rfm_ctrl.rec_msg);
     rfm_ctrl.send_msg_len   = sizeof(rfm_ctrl.send_msg);
     sensor_msg.next_send = millis() + INTERVAL_SEND_TEMP;
+    sensor_msg.sender = main_ctrl.node_addr;
 }
 
 void rfm_task_initilaize(void)
@@ -82,7 +75,7 @@ void rfm_reset(void)
     delay(100);
     digitalWrite(PIN_RFM_RESET, HIGH);
     delay(100);
-    rfm_initialize(main_ctrl.node_role);
+    rfm_initialize();
 } 
 
 uint32_t rfm_timeout;
@@ -226,6 +219,7 @@ void rfm_task(void)
                 if(++sensor[rfm_ctrl.sensor_indx].meta.counter >= 9999) 
                     sensor[rfm_ctrl.sensor_indx].meta.counter = 0;
                 rfm_task_handle.state = 20;
+                io_set_onboard_led(true);
             }
             else rfm_task_handle.state = 100;
             break;
@@ -236,6 +230,7 @@ void rfm_task(void)
             break;
         case 30:
             if (millis() > rfm_ctrl.timeout) {
+                io_set_onboard_led(false);                
                 alpha_show_integer_event(sensor[rfm_ctrl.sensor_indx].meta.counter,2000,false);
                 rfm_ctrl.timeout = millis() + 4000;
                 rfm_task_handle.state = 40;

@@ -5,24 +5,39 @@
 
 #define BOARD_T2504_PICO_RFM95_80x70    1
 #define BOARD_PROTO_PICO_RFM95          2
-#define BOARD BOARD_T2504_PICO_RFM95_80x70 
+#define BOARD_LORA_SENSOR               3
+#define BOARD BOARD_LORA_SENSOR
 
-#define PIN_WIRE_SDA        (4u)
-#define PIN_WIRE_SCL        (5u)
+#if BOARD == BOARD_LORA_SENSOR
 #define PIN_UART0_TX        (0u)
 #define PIN_UART0_RX        (1u)
-#define PIN_UART1_TX        (8u)
-#define PIN_UART1_RX        (9u)
-
+#define PIN_PIR             (2u)
 #define PIN_ONE_WIRE        (3u)
-
-#if BOARD == BOARD_T2504_PICO_RFM95_80x70
-#define PIN_RFM_MOSI        (19u)
+#define PIN_I2C0_SDA        (4u)
+#define PIN_I2C0_SCL        (5u)
+#define PIN_I2C1_SDA        (6u)
+#define PIN_I2C1_SCL        (7u)
+#define PIN_SW1		          (8u)
+#define PIN_SW2		          (9u)
+#define PIN_SW3		          (10u)
+#define PIN_SW4             (11u)
+#define PIN_SW5             (12u)
+#define PIN_SW6             (13u)
+#define PIN_SW7             (14u)
+#define PIN_SW8             (15u)
 #define PIN_RFM_MISO        (16u)
-#define PIN_RFM_SCK         (18u)
 #define PIN_RFM_CS          (17u)
-#define PIN_RFM_IRQ         (21u)
+#define PIN_RFM_SCK         (18u)
+#define PIN_RFM_MOSI        (19u)
 #define PIN_RFM_RESET       (20u)
+#define PIN_RFM_IRQ         (21u)
+#define PIN_EN_VSYSX        (22u)
+#define PIN_LDR             (26u)
+#define PIN_EN_3V3X         (27u)
+#define PIN_RST_412         (28u)
+
+#define PIN_ENABLE_WATCHDOG   PIN_SW7
+#define PIN_ENABLE_TEST_MODE  PIN_SW8
 
 #elif BOARD == BOARD_PROTO_PICO_RFM95
 #define PIN_RFM_MOSI        (19u)
@@ -35,10 +50,7 @@
 #error No board was defined
 #endif
 
-#define PIN_SW1		          (15u)
-#define PIN_SW2		          (14u)
-#define PIN_SW3		          (13u)
-#define PIN_SW4             (12u)
+
 
 #define PIN_LED_RED         (2u)
 #define PIN_LED_GREEN       (3u)
@@ -78,13 +90,20 @@ typedef enum
 void io_initialize(void);
 
 void io_task_initialize(void);
-
-uint8_t io_get_switch_bm(void);
-
-void io_blink(uint8_t color, blink_et bindx);
-
 void io_task(void);
 
-void io_i2c_pwr(bool pwr_on);
+uint8_t io_get_addr(void);
+
+bool io_get_debug_mode(void);
+
+bool io_get_watchdog(void);
+
+void io_pwr_sensor(bool pwr_on);
+void io_pwr_vsysx(bool pwr_on);
+void io_reset_412(void);
+bool io_pir_detected(void);
+uint16_t io_read_ldr(void);
+void io_set_onboard_led(bool is_on);
+
 
 #endif
