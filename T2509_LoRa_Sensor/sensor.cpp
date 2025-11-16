@@ -254,7 +254,7 @@ void sensor_read_values(uint8_t sindx)
         sensor[sindx].meta.updated = true;
         // if(++sensor[sindx].meta.counter > 9999) sensor[sindx].meta.counter = 0;   
         if(sensor[sindx].meta.show_temperature){
-            alpha_show_float_event(sensor[sindx].temperature, 5000, true);
+            alpha_add_float(ALPHA_CH_TEMPERATURE, sensor[sindx].temperature);
         } 
     }
     else {
@@ -336,7 +336,7 @@ void sensor_test_task(void)
                 sensor[sensor_type].meta.updated = true;
                 rfm_set_sender(sensor_test[sensor_ctrl.sensor_indx].sender);
                 if(sensor[sensor_type].meta.show_temperature){
-                    alpha_show_float_event(sensor[sensor_type].temperature, 5000, false);
+                    alpha_add_float(ALPHA_CH_TEMPERATURE,sensor[sensor_type].temperature);
                 } 
                 if(++sensor[sensor_type].meta.counter > 9999) sensor[sensor_type].meta.counter = 0;
                 if (sensor_test[sensor_ctrl.sensor_indx].going_up) sensor_test[sensor_ctrl.sensor_indx].temp += sensor_test[sensor_ctrl.sensor_indx].delta_temp;

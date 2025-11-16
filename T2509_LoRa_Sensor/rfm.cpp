@@ -224,14 +224,14 @@ void rfm_task(void)
             else rfm_task_handle.state = 100;
             break;
         case 20:
-            alpha_show_str4_event("Send",2000,false);
+            alpha_add_short_str( ALPHA_CH_SENDING, "Send");
             rfm_ctrl.timeout = millis() + 5000;
             rfm_task_handle.state = 30;
             break;
         case 30:
             if (millis() > rfm_ctrl.timeout) {
                 io_set_onboard_led(false);                
-                alpha_show_integer_event(sensor[rfm_ctrl.sensor_indx].meta.counter,2000,false);
+                alpha_add_integer(ALPHA_CH_MSG_CNTR, sensor[rfm_ctrl.sensor_indx].meta.counter);
                 rfm_ctrl.timeout = millis() + 4000;
                 rfm_task_handle.state = 40;
             } 
