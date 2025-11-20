@@ -66,7 +66,7 @@ void maestro_task(void)
             alpha_set_brightness(map(maestro.ldr_value, 200,2000,15,1));
             break;
         case 20:
-            if (main_ctrl.error.radio > 0){
+            if (main_ctrl.error.radio > MAESTRO_MAX_ACCEPTED_SENSOR_ERRORS){
                 Serial.printf("Radio Module Error !!!\n");
                 alpha_add_short_str( ALPHA_CH_ERR, (char*)"*Rad");
             }
@@ -92,9 +92,8 @@ void maestro_task(void)
         case 100:
             if (millis() >  maestro.err_msg_timeout){
                 if ((main_ctrl.error.display > 0) || 
-                    (main_ctrl.error.display > 0) ||
-                    (main_ctrl.error.display > 0) ||
-                    (main_ctrl.error.display > 0)) {
+                    (main_ctrl.error.sensor > MAESTRO_MAX_ACCEPTED_SENSOR_ERRORS))
+                {
                     rfm_send_error_msg();
                 }
                 maestro.err_msg_timeout = millis() + MAESTRO_ERR_MSG_TIMEOUT;
@@ -212,7 +211,8 @@ void wd_task(void)
     }
     
     if (maestro.hw_watchdog_activated) {
-        if((main_ctrl.error.radio == 0) && (main_ctrl.error.sensor == 0)){
+        if((main_ctrl.error.radio == 0) && 
+            (main_ctrl.error.sensor <= MAESTRO_MAX_ACCEPTED_SENSOR_ERRORS)){
             watchdog_update();
         }
         // else wait for the watchdog to bite

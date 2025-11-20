@@ -266,6 +266,7 @@ void sensor_read_values(uint8_t sindx)
             else
             {
                 Serial.println("Error: Could not read DS18B20");
+                read_ok = false;
             }
             ds18b20.requestTemperatures();  // for next reading
             break;
@@ -277,6 +278,7 @@ void sensor_read_values(uint8_t sindx)
     //Serial.printf("sensor_read_values(%d) read_ok: %d\n", sindx, read_ok);
     if (read_ok) {
         sensor[sindx].meta.updated = true;
+        main_ctrl.error.sensor = 0;
         // if(++sensor[sindx].meta.counter > 9999) sensor[sindx].meta.counter = 0;   
         if(sensor[sindx].meta.show_temperature){
             alpha_add_float(ALPHA_CH_TEMPERATURE, sensor[sindx].temperature);
@@ -284,6 +286,7 @@ void sensor_read_values(uint8_t sindx)
     }
     else {
         Serial.printf("!!! Sensor read failure: %s\n",sensor[sindx].meta.label);
+        if(main_ctrl.error.sensor < 255) main_ctrl.error.sensor++;
     }
 
 }
