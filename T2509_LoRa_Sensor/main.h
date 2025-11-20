@@ -29,7 +29,16 @@
 
 
 #define INTERVAL_READ_SENSOR    10000
-#define INTERVAL_SEND_TEMP      30000
+#define INTERVAL_SEND_TEMP      5000
+
+typedef struct
+{
+    uint8_t sensor;
+    uint8_t radio;
+    uint8_t display;
+    uint8_t watchdog;
+} error_st;
+
 
 
 typedef struct 
@@ -39,6 +48,7 @@ typedef struct
     bool            io_initialized;
     bool            debug_mode;
     bool            watchdog;
+    error_st        error;
 } main_ctrl_st;
 
 

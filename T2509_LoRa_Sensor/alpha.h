@@ -1,18 +1,8 @@
 #ifndef __ALPHA_H__ 
 #define __ALPHA_H__
 
-#define LONG_STR_LEN        40
+#define LONG_STR_LEN        80
 #define SHORT_STR_LEN       10 
-
-typedef enum
-{
-    ALPHA_SHOW_UNDEFINED    = 0b0000000000000000,
-    ALPHA_SHOW_FLOAT        = 0b0000000000000001,
-    ALPHA_SHOW_INTEGER      = 0b0000000000000010,
-    ALPHA_SHOW_STR4         = 0b0000000000000100,
-    ALPHA_SHOW_LONG_STR     = 0b0000000000001000,
-} alpha_event_et;
-
 
 typedef enum
 {
@@ -45,18 +35,14 @@ typedef struct
     alpha_function_et function;  
 } alpha_channel_st;
 
+
 typedef struct
 {
     uint8_t         channel;
-    uint16_t        event;
-    uint16_t        default_event;
-    float           fval;
-    uint16_t        ival;
     char            long_str[LONG_STR_LEN];
     uint8_t         cursor;
     uint8_t         len;
     uint32_t        timeout;
-    uint32_t        new_timeout;
     bool            ready;
 } alpha_ctrl_st;
 
@@ -66,7 +52,7 @@ void alpha_add_float(alpha_channel_et ch, float fval);
 void alpha_add_integer(alpha_channel_et ch, uint16_t ival);
 void alpha_add_short_str(alpha_channel_et ch, char *buff);
 void alpha_add_long_str(alpha_channel_et ch, char *buff);
-
+void alpha_set_brightness(uint8_t br);
 
 
 

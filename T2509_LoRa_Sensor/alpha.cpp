@@ -17,13 +17,8 @@ atask_st alpha_handle   = {"Alpha Show Task", 100,     0,     0,  255,    0,   1
 
 alpha_ctrl_st  ctrl = {
   .channel = ALPHA_CH_TEMPERATURE,  
-  .event = ALPHA_SHOW_UNDEFINED,
-  .default_event = 0,
-  .fval = 0.0,
-  .ival = 42,
   .long_str  = "ABCD",
   .timeout = 0,
-  .new_timeout = 0,
   .ready = true
 };
 
@@ -46,9 +41,18 @@ alpha_channel_st ach[ALPHA_CH_NBR_OF] =
 void alpha_show_int(uint16_t ival);
 bool alpha_is_ready(void);
 
+void alpha_set_brightness(uint8_t br)
+{
+    // br = 0..15
+    br = constrain(br,0,15);
+    alpha4.setBrightness(br);
+}
 
 void alpha_initialize(void) { 
-    alpha4.begin(I2C_ADDR_ALPHANUM, Wirep );  // pass in the address
+    if (alpha4.begin(I2C_ADDR_ALPHANUM, Wirep )) main_ctrl.error.display = 0;
+    else main_ctrl.error.display = 1;
+    alpha_set_brightness(2);
+
     // for (uint16_t i = 0; i< 1000; i++)  alpha_show_int(i);
 
     ctrl.timeout = millis() + 5000;
@@ -254,18 +258,18 @@ void alpha_task(void)
                         ach[ctrl.channel].active = false;
                         alpha_display_ch_short((alpha_channel_et)ctrl.channel);
                         alpha_handle.state = 120;
-                         Serial.println("One Time -> 120");
+                        // Serial.println("One Time -> 120");
                         break;
                     case ALPHA_FUNCTION_PERMANENT:
-                         Serial.println("Permanent -> 120");
                         alpha_display_ch_short((alpha_channel_et)ctrl.channel);
                         alpha_handle.state = 120;
+                        // Serial.println("Permanent -> 120");
                         break;
                     case ALPHA_FUNCTION_SCROLLING:
                         ctrl.len = strlen(ctrl.long_str);
                         alpha_handle.state = 200;
                         ctrl.ready = false;
-                        Serial.println("Scroll -> 200");
+                        //Serial.println("Scroll -> 200");
                         break;
                 }
             }

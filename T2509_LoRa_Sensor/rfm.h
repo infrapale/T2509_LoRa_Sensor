@@ -132,6 +132,10 @@ void rfm_send_str(char *msg);
 
 void rfm_task(void);
 
+void rfm_send_restart_msg(void);
+
+void rfm_send_error_msg(void);
+
 
 
 

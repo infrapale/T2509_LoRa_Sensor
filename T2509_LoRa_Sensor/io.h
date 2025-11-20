@@ -15,8 +15,10 @@
 #define PIN_ONE_WIRE        (3u)
 #define PIN_I2C0_SDA        (4u)
 #define PIN_I2C0_SCL        (5u)
-#define PIN_I2C1_SDA        (6u)
-#define PIN_I2C1_SCL        (7u)
+//#define PIN_I2C1_SDA      (6u)
+//#define PIN_I2C1_SCL      (7u)
+#define PIN_WD_BEATBACK     (6u)
+#define PIN_WD_HEARTBEAT    (7u)
 #define PIN_SW1		          (8u)
 #define PIN_SW2		          (9u)
 #define PIN_SW3		          (10u)
@@ -98,9 +100,18 @@ bool io_get_debug_mode(void);
 
 bool io_get_watchdog(void);
 
+void io_set_wd_heartbeat(uint8_t value);
+
+uint8_t io_get_wd_beatback(void);
+
+bool io_pir_detected(void);
+
 void io_pwr_sensor(bool pwr_on);
+
 void io_pwr_vsysx(bool pwr_on);
-void io_reset_412(void);
+
+void io_reset_412(uint8_t value);
+
 bool io_pir_detected(void);
 uint16_t io_read_ldr(void);
 void io_set_onboard_led(bool is_on);

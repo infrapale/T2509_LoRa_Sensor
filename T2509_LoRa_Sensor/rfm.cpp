@@ -48,15 +48,18 @@ void rfm_initialize(void)
         rfm_set_frequency(867.5);
         rfm_set_power(14);
         rfm_set_modem_conf(0);
+        main_ctrl.error.radio = 0;
     }
     else
     {
-        Serial.println("init failed");
+        Serial.println("!!! RFM95 init() failed");
+        main_ctrl.error.radio = 1;
     }  
     rfm_ctrl.rec_msg_len    = sizeof(rfm_ctrl.rec_msg);
     rfm_ctrl.send_msg_len   = sizeof(rfm_ctrl.send_msg);
     sensor_msg.next_send = millis() + INTERVAL_SEND_TEMP;
     sensor_msg.sender = main_ctrl.node_addr;
+    Serial.printf("Max mesage length= %d\n",RH_RF95_MAX_MESSAGE_LEN);
 }
 
 void rfm_task_initilaize(void)
@@ -85,13 +88,18 @@ uint8_t sdata[] = "And hello back to you";
 void rfm_send_str(char *msg)
 {
     uint8_t msg_len = strlen(msg);
-    Serial.printf("Radiating: %s",rfm_ctrl.buff);
-    memset(rfm_ctrl.send_msg,0x00,RH_RF95_MAX_MESSAGE_LEN);
-    memcpy(rfm_ctrl.send_msg, msg, msg_len);
-    rfm_ctrl.send_msg_len = msg_len; 
-    rf95.send(rfm_ctrl.send_msg, rfm_ctrl.send_msg_len);
-    rf95.waitPacketSent();
-    Serial.printf(" .. packet done\n");
+    if(main_ctrl.error.radio == 0){
+        Serial.printf("Radiating: %s, len=%d",rfm_ctrl.buff, msg_len);
+        memset(rfm_ctrl.send_msg,0x00,RH_RF95_MAX_MESSAGE_LEN);
+        memcpy(rfm_ctrl.send_msg, msg, msg_len);
+        rfm_ctrl.send_msg_len = msg_len; 
+        rf95.send(rfm_ctrl.send_msg, rfm_ctrl.send_msg_len);
+        rf95.waitPacketSent();
+        Serial.printf(" .. packet done\n");
+    }
+    else {
+        Serial.printf("Radio kaputt? Not able to send: %s, len=%d\n",rfm_ctrl.buff, msg_len);
+    }
     // Serial1.printf("%s len=%d",msg,msg_len);
 }
 
@@ -193,10 +201,35 @@ void rfm_build_sensor_msg(uint8_t sindx)
             break;
         case SENSOR_TYPE_PIR:
             break;
-
     }
-
 }
+
+void rfm_send_restart_msg(void)
+{ 
+    sprintf( rfm_ctrl.buff,"<%d;%d;a%s;d%s;t%s>",
+        sensor_msg.target,
+        sensor_msg.sender,
+        APP_NAME,
+        __DATE__,
+        __TIME__
+    );
+    rfm_send_str(rfm_ctrl.buff);
+}
+
+void rfm_send_error_msg(void)
+{ 
+    sprintf( rfm_ctrl.buff,"<%d;%d;x%d;y%d;z%d;w%d>",
+        sensor_msg.target,
+        sensor_msg.sender,
+        main_ctrl.error.sensor,
+        main_ctrl.error.display,
+        main_ctrl.error.radio,
+        main_ctrl.error.watchdog
+    );
+    rfm_send_str(rfm_ctrl.buff);
+}
+
+
 
 
 void rfm_task(void)
@@ -204,8 +237,12 @@ void rfm_task(void)
     switch(rfm_task_handle.state)
     {
         case 0:
-            rfm_task_handle.state = 10;
+            rfm_task_handle.state = 5;
             rfm_ctrl.sensor_indx = 0;
+            rfm_ctrl.timeout = millis() + main_ctrl.node_addr * 3;
+            break;
+        case 5: 
+            if (millis() > rfm_ctrl.timeout) rfm_task_handle.state = 10;
             break;
         case 10:    
             if ((sensor[rfm_ctrl.sensor_indx].meta.active) &&
@@ -224,8 +261,8 @@ void rfm_task(void)
             else rfm_task_handle.state = 100;
             break;
         case 20:
-            alpha_add_short_str( ALPHA_CH_SENDING, "Send");
-            rfm_ctrl.timeout = millis() + 5000;
+            alpha_add_short_str( ALPHA_CH_SENDING, (char*)"Send");
+            rfm_ctrl.timeout = millis() + INTERVAL_SEND_TEMP;
             rfm_task_handle.state = 30;
             break;
         case 30:

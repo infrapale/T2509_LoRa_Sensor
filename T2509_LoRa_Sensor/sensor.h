@@ -10,6 +10,7 @@
 #define SENSOR_LABEL_LEN        8
 #define NBR_TEST_SENSOR         4
 
+
 typedef enum
 {
     SENSOR_TYPE_UNDEFINED = 0,
@@ -23,11 +24,19 @@ typedef enum
     SENSOR_TYPE_NBR_OF
 } sensor_type_et;
 
+typedef enum 
+{
+    SENSOR_STATUS_OK = 0,
+    SENSOR_STATUS_NOT_AVAILABLE,
+    SENSOR_STATUS_READ_ERROR
+} sensor_status_et;
+
 typedef struct
 {
     char        label[SENSOR_LABEL_LEN];
     uint8_t     i2c_addr;
     bool        active;
+    uint8_t     status;
     bool        updated;
     bool        show_temperature;
     uint16_t    counter;

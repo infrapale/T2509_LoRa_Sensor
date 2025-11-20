@@ -7,6 +7,7 @@
 #include "io.h"
 #include "alpha.h"
 #include "sensor.h"
+#include "maestro.h"
 
 
 
@@ -14,7 +15,12 @@ main_ctrl_st main_ctrl = {
   .test_activated = false,
   .io_initialized = false,
   .debug_mode = false,
-  .watchdog = false 
+  .watchdog = false,
+  .error = {
+    .sensor = 0,
+    .radio = 9,
+    .display = 0,
+  }
 };
  
 void debug_print_task(void) {
@@ -40,24 +46,25 @@ void setup()
   main_ctrl.node_addr = io_get_addr();
   main_ctrl.debug_mode = io_get_debug_mode();
   main_ctrl.watchdog = io_get_watchdog();
-  
-  while (!Serial) ; // Wait for serial port to be available
+  if(io_get_debug_mode()){
+    while (!Serial) ; // Wait for serial port to be available
+  } else delay(2000);
   Serial.print(APP_NAME); Serial.print(" Compiled: ");
   Serial.print(__DATE__); Serial.print(" ");
   Serial.print(__TIME__); Serial.println();
-  // while(true){delay(1);}
-
+  
   Serial.printf("Address:    %d \n", main_ctrl.node_addr);
   Serial.printf("Debug Mode: %s\n", (main_ctrl.debug_mode) ? "Activated" : "Not activated");
   Serial.printf("Watchdog:   %s\n", (main_ctrl.watchdog) ? "Activated" : "Not activated");
 
-  Serial1.println("Serial1");
   if(main_ctrl.test_activated) Serial.println("Test Mode is Activated");
+  io_pwr_vsysx(true);
   alpha_initialize();
   rfm_initialize(); 
   rfm_task_initilaize();
   atask_add_new(&debug_print_handle);
   sensor_initialize();
+  maestro_initialize();
 }
 
 void setup1(void)

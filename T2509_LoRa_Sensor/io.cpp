@@ -31,21 +31,29 @@ void io_initialize(void)
   
   pinMode(PIN_EN_VSYSX, OUTPUT);
   pinMode(PIN_LDR, INPUT);
+
+  pinMode(PIN_WD_BEATBACK,INPUT);
+  pinMode(PIN_WD_HEARTBEAT,OUTPUT);
+
   pinMode(PIN_EN_3V3X, OUTPUT);
   pinMode(PIN_RST_412, OUTPUT);
 
   pinMode(LED_BUILTIN, OUTPUT); // Set onboard LED pin as output
 
-
-  digitalWrite(PIN_EN_VSYSX, LOW);  // Low == enable
+  //digitalWrite(PIN_EN_VSYSX, LOW);  // Low == enable
   digitalWrite(PIN_EN_3V3X, LOW);   // Low == enable
-  digitalWrite(PIN_RST_412, HIGH);  // Low == reset ATTiny412
+  digitalWrite(PIN_RST_412, HIGH);  // High == reset ATTiny412
+
 
   io_pwr_sensor(true);
   Wire.setSDA(PIN_I2C0_SDA);
   Wire.setSCL(PIN_I2C0_SCL);
-  Wire1.setSDA(PIN_I2C1_SDA);
-  Wire1.setSCL(PIN_I2C1_SCL);
+  //Wire1.setSDA(PIN_I2C1_SDA);
+  //Wire1.setSCL(PIN_I2C1_SCL);
+
+//   analogWriteFreq(1000);
+//   analogWriteRange(1023);
+//   analogWrite(PIN_EN_VSYSX, 500);
 
 }
 
@@ -94,11 +102,19 @@ void io_pwr_vsysx(bool pwr_on)
     else digitalWrite(PIN_EN_VSYSX, HIGH);
 }
 
-void io_reset_412(void)
+void io_reset_412(uint8_t value)
 {
-    digitalWrite(PIN_RST_412, LOW);
-    delay(100);
-    digitalWrite(PIN_RST_412, HIGH);
+    digitalWrite(PIN_RST_412, value);
+}
+
+void io_set_wd_heartbeat(uint8_t value)
+{
+    digitalWrite(PIN_WD_HEARTBEAT, value);
+}
+
+uint8_t io_get_wd_beatback(void)
+{
+    return digitalRead(PIN_WD_BEATBACK);
 }
 
 bool io_pir_detected(void)

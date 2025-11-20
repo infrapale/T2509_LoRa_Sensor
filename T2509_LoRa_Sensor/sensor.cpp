@@ -28,6 +28,7 @@ typedef struct
 
 
 extern TwoWire *Wirep;
+extern main_ctrl_st main_ctrl;
 
 // function prototype
 void sensor_print_bmp280_data(void);
@@ -63,42 +64,50 @@ DallasTemperature ds18b20(&oneWire);
 sensor_st sensor[SENSOR_TYPE_NBR_OF] =
 {
     [SENSOR_TYPE_UNDEFINED] = {
-            .meta = {.label= "Undef  ", .i2c_addr = 0x00, .active=false, .updated=false, .show_temperature=false, .counter= 0, .next_meas=0, .next_send= 0},
+            .meta = {.label= "Undef  ", .i2c_addr = 0x00, .active=false, .status=0, .updated=false, 
+            .show_temperature=false, .counter= 0, .next_meas=0, .next_send= 0},
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
     [SENSOR_TYPE_BMP180] = {
-            .meta = {.label= "BMP180 ", .i2c_addr = I2C_ADDR_BMP180, .active=false, .updated=false, .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
+            .meta = {.label= "BMP180 ", .i2c_addr = I2C_ADDR_BMP180, .active=false, .status=0, .updated=false, 
+            .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
     [SENSOR_TYPE_BMP280] = {
-            .meta = {.label= "BMP280 ", .i2c_addr = I2C_ADDR_BMP280, .active=false, .updated=false,.show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
+            .meta = {.label= "BMP280 ", .i2c_addr = I2C_ADDR_BMP280, .active=false, .status=0, .updated=false,
+            .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
     [SENSOR_TYPE_BME680] = {
-            .meta = {.label= "BME680 ", .i2c_addr = I2C_ADDR_BME680, .active=false, .updated=false, .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
+            .meta = {.label= "BME680 ", .i2c_addr = I2C_ADDR_BME680, .active=false, .status=0, .updated=false, 
+            .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
     [SENSOR_TYPE_AHT20] = {
-            .meta = {.label= "AHT20  ", .i2c_addr = I2C_ADDR_AHT20 , .active=false, .updated=false, .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
+            .meta = {.label= "AHT20  ", .i2c_addr = I2C_ADDR_AHT20 , .active=false, .status=0, .updated=false, 
+            .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
     [SENSOR_TYPE_SHT21] = {
-            .meta = {.label= "SHT21  ", .i2c_addr = I2C_ADDR_SHT21, .active=false, .updated=false, .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
+            .meta = {.label= "SHT21  ", .i2c_addr = I2C_ADDR_SHT21, .active=false, .status=0, .updated=false, 
+            .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
     [SENSOR_TYPE_DS18B20] = {
-            .meta = {.label= "DS18B20", .i2c_addr = 0x00, .active=true, .updated=false, .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
+            .meta = {.label= "DS18B20", .i2c_addr = 0x00, .active=true,  .status=0, .updated=false, 
+            .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
     [SENSOR_TYPE_PIR] = {
-            .meta = {.label= "PIR    ", .i2c_addr = 0x00, .active=false, .updated=false, .counter= 0, .next_meas=0, .next_send= 0},
+            .meta = {.label= "PIR    ", .i2c_addr = 0x00, .active=false, .updated=false, 
+            .show_temperature=true, .counter= 0, .next_meas=0, .next_send= 0},
             .pressure = 0, .temperature = 0.0, .humidity = 0.0, .float_val = 0.0, .on_off = 0
     },
 };
 
 sensor_test_st sensor_test[NBR_TEST_SENSOR] =
 {
-    {.sender=12, .sensor=SENSOR_TYPE_BMP180,.interval=22000, .temp=14.0, .min_temp=4.0, .max_temp=38.0, .delta_temp=2.0, .going_up=false},
+    {.sender=12, .sensor=SENSOR_TYPE_BMP180,.interval=11000, .temp=14.0, .min_temp=4.0, .max_temp=38.0, .delta_temp=2.0, .going_up=false},
     {.sender=18, .sensor=SENSOR_TYPE_BMP280,.interval=37000, .temp=4.0,  .min_temp=4.0, .max_temp=38.0, .delta_temp=2.0, .going_up=true},
     {.sender=24, .sensor=SENSOR_TYPE_AHT20,.interval=61000,  .temp=10.0, .min_temp=4.0, .max_temp=38.0, .delta_temp=1.0, .going_up=false},
     {.sender=10, .sensor=SENSOR_TYPE_SHT21,.interval=120000, .temp=-1.0, .min_temp=-4.0, .max_temp=18.0, .delta_temp=2.0, .going_up=false},
@@ -109,7 +118,7 @@ void sensor_initialize(void)
 {
     uint8_t i2c_addr;
     uint8_t i2c_error;
-    uint8_t status;
+    
     #ifndef TEST_MODE
     for (uint8_t sindx = 0; sindx < SENSOR_TYPE_NBR_OF; sindx++ ){
         i2c_addr = sensor[sindx].meta.i2c_addr;
@@ -119,7 +128,8 @@ void sensor_initialize(void)
             if (i2c_error == 0) {
                 sensor[sindx].meta.active = true; 
                 Serial.printf("Sensor %s active\n", sensor[sindx].meta.label);
-            }
+                sensor[sindx].meta.status = SENSOR_STATUS_OK;
+            } else sensor[sindx].meta.status = SENSOR_STATUS_NOT_AVAILABLE;
         }
     }
     ds18b20.begin();
@@ -128,28 +138,27 @@ void sensor_initialize(void)
         if (sensor[sindx].meta.active){
             switch (sindx){
                 case SENSOR_TYPE_BMP180:
-                    status = bmp180.begin(I2C_ADDR_BMP180, Wirep);
+                    sensor[sindx].meta.status = bmp180.begin(I2C_ADDR_BMP180, Wirep);
                     break;
                 case SENSOR_TYPE_BMP280:
-                    status = bmp280.begin();
+                    sensor[sindx].meta.status = bmp280.begin();
                     break;
                 case SENSOR_TYPE_BME680:
-                    status = bme680.begin();
-                    if (status == 0) {
+                    sensor[sindx].meta.status = bme680.begin();
+                    if (sensor[sindx].meta.status == 0) {
                         // Set up oversampling and filter initialization
                         bme680.setTemperatureOversampling(BME680_OS_8X);
                         bme680.setHumidityOversampling(BME680_OS_2X);
                         bme680.setPressureOversampling(BME680_OS_4X);
                         bme680.setIIRFilterSize(BME680_FILTER_SIZE_3);
                         bme680.setGasHeater(320, 150); // 320*C for 150 ms
-                        status = 1;
-                    } else status = 0;
+                    } 
                     break;
                 case SENSOR_TYPE_AHT20:
-                    status = aht20.begin(Wirep);
+                    sensor[sindx].meta.status = aht20.begin(Wirep);
                     break;
                 case SENSOR_TYPE_SHT21:
-                    status = sht31.begin(sensor[SENSOR_TYPE_SHT21].meta.i2c_addr);
+                    sensor[sindx].meta.status = sht31.begin(sensor[SENSOR_TYPE_SHT21].meta.i2c_addr);
                     Serial.print("SHT21 Heater is ");
                     (sht31.isHeaterEnabled()) ? Serial.println("Enabled") : Serial.println("Disabled");
                     break;
@@ -157,25 +166,40 @@ void sensor_initialize(void)
                     ds18b20.requestTemperatures();
                     delay(1500);
                     tempC = ds18b20.getTempCByIndex(0);
-                    if (tempC != DEVICE_DISCONNECTED_C) status = true;
-                    else status = false;
-                    ds18b20.requestTemperatures();
+                    if (tempC != DEVICE_DISCONNECTED_C){
+                        sensor[sindx].meta.status = SENSOR_STATUS_OK;
+                        sensor[sindx].meta.active = true;
+                        ds18b20.requestTemperatures();
+                    } 
+                    else {
+                        sensor[sindx].meta.status = SENSOR_STATUS_NOT_AVAILABLE;
+                        sensor[sindx].meta.active = false;
+                    }
                     break;
                 case SENSOR_TYPE_PIR:
                     break;
             }
         }
-        if (!status) {
+        if (sensor[sindx].meta.status != 0) {
             Serial.printf("Sensor failure %s\n", sensor[sindx].meta.label);
-            sensor[sindx].meta.active = false;
+            //sensor[sindx].meta.active = false;
+            sensor[sindx].meta.status = SENSOR_STATUS_READ_ERROR;
+        } else sensor[sindx].meta.status = SENSOR_STATUS_OK;
 
-        }
     }
 
+    uint8_t nbr_active = 0;
     for (uint8_t sindx = 0; sindx < SENSOR_TYPE_NBR_OF; sindx++ ){
+
+        Serial.printf("!!! Sensor[%d] %s: active: %d status: %d\n", sindx, sensor[sindx].meta.label, sensor[sindx].meta.active, sensor[sindx].meta.status);
         if (sensor[sindx].meta.active){
             sensor[sindx].meta.next_send = millis() + INTERVAL_SEND_TEMP;
+            nbr_active++;
         }
+    }
+    if (nbr_active == 0){
+        Serial.println("Error!!! No Active Sensors");
+        main_ctrl.error.sensor = 1;
     }
  
     #else  //Test code
@@ -250,6 +274,7 @@ void sensor_read_values(uint8_t sindx)
 
     }
     sensor[sindx].meta.next_meas = millis() + INTERVAL_READ_SENSOR;
+    //Serial.printf("sensor_read_values(%d) read_ok: %d\n", sindx, read_ok);
     if (read_ok) {
         sensor[sindx].meta.updated = true;
         // if(++sensor[sindx].meta.counter > 9999) sensor[sindx].meta.counter = 0;   
@@ -297,6 +322,7 @@ void sensor_task(void)
             sensor_ctrl.sensor_indx = 0;
             break;
         case 10: 
+            // Serial.printf("*** indx: %d - %d\n",sensor_ctrl.sensor_indx, sensor[sensor_ctrl.sensor_indx].meta.active);
             if(sensor[sensor_ctrl.sensor_indx].meta.active && (millis() > sensor[sensor_ctrl.sensor_indx].meta.next_meas)) {
                 sensor_read_values(sensor_ctrl.sensor_indx);
                 sensor_handle.state = 20;
@@ -312,10 +338,29 @@ void sensor_task(void)
             } 
             break;
         case 100:
-            if(sensor_ctrl.sensor_indx < SENSOR_TYPE_NBR_OF-1) sensor_ctrl.sensor_indx++;
-            else sensor_ctrl.sensor_indx = 0;
-            sensor_handle.state = 10;
+            if(sensor_ctrl.sensor_indx < SENSOR_TYPE_NBR_OF-1){
+                sensor_ctrl.sensor_indx++;
+                sensor_handle.state = 10;
+            } 
+            else {
+                // Power Off sensors
+                sensor_ctrl.sensor_indx = 0;
+                io_pwr_sensor(false);
+                sensor_ctrl.timeout = millis() + 5000;
+                sensor_handle.state = 200;
+            }
             break;
+        case 200:
+            if (millis() > sensor_ctrl.timeout){
+                io_pwr_sensor(true);
+                sensor_ctrl.timeout = millis() + 1000;
+                sensor_handle.state = 210;
+            }
+            break;
+        case 210:
+            if (millis() > sensor_ctrl.timeout) sensor_handle.state = 10;
+            break;
+
     }
 }
 
@@ -328,6 +373,13 @@ void sensor_test_task(void)
         case 0:
             sensor_handle.state = 10;
             sensor_ctrl.sensor_indx = 0;
+            break;
+        case 5:
+            sensor_handle.state = 6;
+            sensor_ctrl.timeout = millis() + main_ctrl.node_addr * 3;
+            break;    
+        case 6:
+            if (millis() > sensor_ctrl.timeout) sensor_handle.state = 10;
             break;
         case 10: 
             sensor_type = sensor_test[sensor_ctrl.sensor_indx].sensor;
@@ -357,7 +409,7 @@ void sensor_test_task(void)
         case 100:
             if(sensor_ctrl.sensor_indx < NBR_TEST_SENSOR-1) sensor_ctrl.sensor_indx++;
             else sensor_ctrl.sensor_indx = 0;
-            sensor_handle.state = 10;
+            sensor_handle.state = 5;
             break;
     }
 }
