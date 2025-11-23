@@ -1,3 +1,12 @@
+
+// typedef struct
+// {
+//     bool get_rssi;
+//     bool get_role;
+//     bool get_msg;
+// } sub_task_st;
+
+
 #ifndef __PARSER_H__
 #define __PARSER_H__
 

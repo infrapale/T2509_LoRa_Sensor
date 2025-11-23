@@ -72,13 +72,6 @@ typedef struct
 
 
 
-typedef struct
-{
-    bool get_rssi;
-    bool get_role;
-    bool get_msg;
-} sub_task_st;
-
 typedef struct 
 {
     char            buff[RH_RF95_MAX_MESSAGE_LEN];
@@ -87,28 +80,19 @@ typedef struct
     msg_st          tx_msg;
     msg_st          rx_msg;
     uint8_t         node_addr;
-    //node_role_et    node_role;
     int             rssi;
     int8_t          power;
     float           frequency;
     RH_RF95::ModemConfigChoice  modem_conf;
-    uint8_t         sf;
     uint8_t         tindx;
     atask_st        *taskp;
-    uint32_t        tatio;  
     uint8_t         send_msg[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t         rec_msg[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t         send_msg_len;
     uint8_t         rec_msg_len;
     reply_et        reply_status;
-    sub_task_st     sub_task;
 } rfm_ctrl_st;
 
-typedef struct
-{
-    uint16_t send_cntr;
-    uint16_t rec_cntr;
-} client_msg_st;
 
 void rfm_initialize(void);
 
@@ -124,7 +108,6 @@ void rfm_set_frequency(float freq);
 
 void rfm_set_modem_conf(int8_t modem_conf_indx);
 
-void rfm_set_sf(uint8_t sf);
 
 void rfm_send_str(char *msg);
 

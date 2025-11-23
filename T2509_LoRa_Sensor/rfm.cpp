@@ -123,11 +123,6 @@ void rfm_set_frequency(float freq)
     rf95.setFrequency(freq);
 }
 
-void rfm_set_sf(uint8_t sf)
-{
-    rfm_ctrl.sf  = sf;
-    rf95.setSpreadingFactor(sf);
-}
 
 uint8_t data[] = "Hello World!";
 

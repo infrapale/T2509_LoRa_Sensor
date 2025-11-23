@@ -67,51 +67,6 @@ void alpha_initialize(void) {
     delay(4000);
 }
 
-// void alpha_show_str(char *str){
-//   for(uint8_t i=0; i < 4;i++){
-//     alpha4.writeDigitAscii(i, str[i]);
-//   }
-//     alpha4.writeDisplay();
-// }
-
-
-// void alpha_show_float(float value)
-// {
-//     char buff[8];
-//     // dtostrf(float_value, min_width, num_digits_after_decimal, where_to_store_string)
-//     dtostrf(value, 4, 1, buff); 
-//     //Serial.print(value); Serial.print(" --> "); Serial.println(buff);
-
-//     uint8_t pos = 0;
-
-//       if (value >= 0.0 ){
-//         for (uint8_t i = 4; i > 0; i--){buff[i] = buff[i-1];}
-//         buff[0] = '+';
-//         buff[5] = 0x00;
-//       }
-//       // Serial.print(value); Serial.print(" ..> "); Serial.println(buff);
-//       buff[5] = 0x00;
-//       for(uint8_t i=0; i < 5;i++){
-//           if (buff[i+1] == '.') {
-//               alpha4.writeDigitAscii(pos++, buff[i], true);
-//               i++;
-//           }
-//           else {
-//               alpha4.writeDigitAscii(pos++, buff[i], false);
-//           }
-//       }
-//       alpha4.writeDisplay();
-// }
-
-// void alpha_show_int(uint16_t ival)
-// {
-//     char buff[8];
-//     // itoa(ival,buff,10);
-//     sprintf(buff,"%04d",ival);
-//     alpha_show_str(buff);
-//     //Serial.print("alpha_show_int() ");Serial.println(buff);
-// }
-
 bool alpha_is_ready(void)
 {
    return (ctrl.ready);
@@ -177,63 +132,8 @@ void alpha_display_short(char *str)
 void alpha_display_ch_short(alpha_channel_et ch)
 {
     alpha_display_short(ach[ch].str);   
-    // uint8_t i = 0;
-    // uint8_t pos = 0;
-    // bool    not_done = true;
-    // char    *str = ach[ch].str;
-
-    // while (not_done){
-    //     if (str[i+1] == '.') {
-    //             alpha4.writeDigitAscii(pos++, str[i++], true);
-    //             i++;
-    //     }
-    //     else {alpha4.writeDigitAscii(pos++, str[i++], false);}
-    //     if(pos >= 4) not_done = false;
-    // }
-    // alpha4.writeDisplay();
 }
 
-// void alpha_show_float_event(float fval, uint32_t timeout, bool set_default)
-// {
-//     ctrl.event |= ALPHA_SHOW_FLOAT;
-//     ctrl.fval   = fval;
-//     ctrl.new_timeout = timeout;
-//     ctrl.ready = false;
-//     if (set_default) ctrl.default_event = ALPHA_SHOW_FLOAT;
-// }
-
-
-
-// void alpha_show_integer_event(uint16_t ival, uint32_t timeout, bool set_default)
-// {
-//     ctrl.event |= ALPHA_SHOW_INTEGER;
-//     ctrl.ival   = ival;
-//     ctrl.new_timeout = timeout;
-//     ctrl.ready = false;
-//     if (set_default) ctrl.default_event = ALPHA_SHOW_INTEGER;
-// }
-
-// void alpha_show_str4_event(const char *str4, uint32_t timeout, bool set_default)
-// {
-//     ctrl.event |= ALPHA_SHOW_STR4;
-//     memset(ctrl.str,0x00, 5);
-//     strncpy(ctrl.str,str4, 4);
-//     ctrl.ready = false;
-//     ctrl.new_timeout = timeout;
-//     if (set_default) ctrl.default_event = ALPHA_SHOW_INTEGER;
-// }
-
-// void alpha_show_long_str_event(char *str, uint32_t timeout)
-// {
-//     ctrl.len = strlen(str);
-//     if (ctrl.len < SHOW_MAX_STR_LEN) {
-//         ctrl.event |= ALPHA_SHOW_LONG_STR;
-//         strcpy(ctrl.str, str);
-//         ctrl.new_timeout = timeout;
-//         ctrl.cursor = 0;
-//         ctrl.ready = false;
-//     }
-// }
 
 void alpha_task(void)
 {
