@@ -62,7 +62,7 @@ uint8_t io_get_addr(void)
     io_ctrl.switches = 0b00000000;
     #if BOARD == BOARD_LORA_SENSOR
     delay(20);
-    for (uint8_t i=0; i < 6; i++)
+    for (uint8_t i=0; i < 5; i++)
     {
         if (digitalRead(sw_pin[i]) == LOW) io_ctrl.switches |= (1 << i);
     }     
@@ -78,6 +78,11 @@ bool io_get_debug_mode(void)
 bool io_get_watchdog(void)
 {
     return (digitalRead(PIN_ENABLE_WATCHDOG) == LOW);
+}
+
+bool io_get_long_range_modulation(void)
+{
+    return (digitalRead(PIN_LONG_RANGE_MOD) == LOW);
 }
 
 

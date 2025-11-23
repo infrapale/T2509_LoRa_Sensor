@@ -16,9 +16,11 @@ main_ctrl_st main_ctrl = {
   .io_initialized = false,
   .debug_mode = false,
   .watchdog = false,
+  .long_range_modulation = false,
+  .fast_interval = false,
   .error = {
     .sensor = 0,
-    .radio = 9,
+    .radio = 0,
     .display = 0,
   }
 };
@@ -46,6 +48,10 @@ void setup()
   main_ctrl.node_addr = io_get_addr();
   main_ctrl.debug_mode = io_get_debug_mode();
   main_ctrl.watchdog = io_get_watchdog();
+  main_ctrl.long_range_modulation = io_get_long_range_modulation();
+  main_ctrl.fast_interval = !main_ctrl.long_range_modulation;
+
+
   if(io_get_debug_mode()){
     while (!Serial) ; // Wait for serial port to be available
   } else delay(2000);
@@ -56,7 +62,8 @@ void setup()
   Serial.printf("Address:    %d \n", main_ctrl.node_addr);
   Serial.printf("Debug Mode: %s\n", (main_ctrl.debug_mode) ? "Activated" : "Not activated");
   Serial.printf("Watchdog:   %s\n", (main_ctrl.watchdog) ? "Activated" : "Not activated");
-
+  Serial.printf("Long Range: %s\n", (main_ctrl.long_range_modulation) ? "Activated" : "Not activated");
+ 
   if(main_ctrl.test_activated) Serial.println("Test Mode is Activated");
   io_pwr_vsysx(true);
   alpha_initialize();

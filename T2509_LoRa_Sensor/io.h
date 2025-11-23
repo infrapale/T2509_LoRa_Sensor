@@ -38,6 +38,7 @@
 #define PIN_EN_3V3X         (27u)
 #define PIN_RST_412         (28u)
 
+#define PIN_LONG_RANGE_MOD    PIN_SW6
 #define PIN_ENABLE_WATCHDOG   PIN_SW7
 #define PIN_ENABLE_TEST_MODE  PIN_SW8
 
@@ -99,6 +100,8 @@ uint8_t io_get_addr(void);
 bool io_get_debug_mode(void);
 
 bool io_get_watchdog(void);
+
+bool io_get_long_range_modulation(void);
 
 void io_set_wd_heartbeat(uint8_t value);
 

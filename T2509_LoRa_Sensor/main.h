@@ -29,7 +29,8 @@
 
 
 #define INTERVAL_READ_SENSOR    10000
-#define INTERVAL_SEND_TEMP      5000
+#define INTERVAL_SEND_TEMP      600000
+#define INTERVAL_FAST_SEND_TEMP 20000
 
 typedef struct
 {
@@ -48,6 +49,8 @@ typedef struct
     bool            io_initialized;
     bool            debug_mode;
     bool            watchdog;
+    bool            long_range_modulation;
+    bool            fast_interval;
     error_st        error;
 } main_ctrl_st;
 

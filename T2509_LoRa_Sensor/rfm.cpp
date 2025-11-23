@@ -25,7 +25,7 @@ rfm_sensor_msg_st sensor_msg = {
     .target = ADDR_TARGET,
     .sender = ADDR_SENDER,
     .next_send = 0,
-    //.avail = false,
+    .interval = INTERVAL_SEND_TEMP,
 };
 
 //                                  123456789012345   ival  next  state  prev  cntr flag  call backup
@@ -43,12 +43,14 @@ RH_RF95::ModemConfigChoice modem_config[NBR_OF_MODEM_CONF] =
 void rfm_initialize(void)
 {
     rfm_ctrl.rx_msg.avail = false;
+    if (main_ctrl.fast_interval) sensor_msg.interval = INTERVAL_FAST_SEND_TEMP;
+    else sensor_msg.interval = INTERVAL_SEND_TEMP;
     if (rf95.init())
     {
         rfm_set_frequency(867.5);
         rfm_set_power(14);
-        rfm_set_modem_conf(0);
-        main_ctrl.error.radio = 0;
+        if (main_ctrl.long_range_modulation) rfm_set_modem_conf(3);
+        else rfm_set_modem_conf(0);
     }
     else
     {
@@ -57,7 +59,7 @@ void rfm_initialize(void)
     }  
     rfm_ctrl.rec_msg_len    = sizeof(rfm_ctrl.rec_msg);
     rfm_ctrl.send_msg_len   = sizeof(rfm_ctrl.send_msg);
-    sensor_msg.next_send = millis() + INTERVAL_SEND_TEMP;
+    sensor_msg.next_send = millis() + sensor_msg.interval;
     sensor_msg.sender = main_ctrl.node_addr;
     Serial.printf("Max mesage length= %d\n",RH_RF95_MAX_MESSAGE_LEN);
 }
@@ -252,7 +254,7 @@ void rfm_task(void)
                 rfm_build_sensor_msg(rfm_ctrl.sensor_indx);
                 rfm_send_str(rfm_ctrl.buff);
                 sensor[rfm_ctrl.sensor_indx].meta.updated = false;
-                sensor[rfm_ctrl.sensor_indx].meta.next_send = millis() + INTERVAL_SEND_TEMP;
+                sensor[rfm_ctrl.sensor_indx].meta.next_send = millis() + sensor_msg.interval;
                 if(++sensor[rfm_ctrl.sensor_indx].meta.counter >= 9999) 
                     sensor[rfm_ctrl.sensor_indx].meta.counter = 0;
                 rfm_task_handle.state = 20;
@@ -262,14 +264,14 @@ void rfm_task(void)
             break;
         case 20:
             alpha_add_short_str( ALPHA_CH_SENDING, (char*)"Send");
-            rfm_ctrl.timeout = millis() + INTERVAL_SEND_TEMP;
+            rfm_ctrl.timeout = millis() + 4000;
             rfm_task_handle.state = 30;
             break;
         case 30:
             if (millis() > rfm_ctrl.timeout) {
                 io_set_onboard_led(false);                
                 alpha_add_integer(ALPHA_CH_MSG_CNTR, sensor[rfm_ctrl.sensor_indx].meta.counter);
-                rfm_ctrl.timeout = millis() + 4000;
+                rfm_ctrl.timeout = millis() + 1000 + (main_ctrl.node_addr*500);
                 rfm_task_handle.state = 40;
             } 
             break;

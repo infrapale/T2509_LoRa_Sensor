@@ -9,6 +9,7 @@
 #include "rfm.h"
 
 #define MAESTRO_ERR_MSG_TIMEOUT   60000;
+//#define MAESTRO_USE_EXT_WD    
 
 typedef struct
 {
@@ -179,16 +180,20 @@ void wd_task(void)
 
 
         case 300:
+            #ifdef MAESTRO_USE_EXT_WD    
             Serial.printf("BB Faults= %d\n", maestro.wd_bb_faults);
             if (maestro.wd_bb_faults > BEATBACK_FAULT_LIMIT) {
                 Serial.println("Restarting watchdog!!");
                 maestro.wd_bb_faults = 0;
-                if (main_ctrl.error.watchdog < 255) main_ctrl.error.watchdog;
+                if (main_ctrl.error.watchdog < 255) main_ctrl.error.watchdog++;
                 wd_handle.state = 200; // WD Reset is leading into a reset loop   
             }
             else {
                 wd_handle.state = 200;
             }
+            #else 
+            wd_handle.state = 200;
+            #endif
             break;
         case 400: 
             io_reset_412(HIGH);
