@@ -7,6 +7,21 @@ Required non-arduino Libraries:
   https://github.com/infrapale/T2409_atask
 
 *******************************************************************************
+---------                         On               Off
+    19  |                         --------------------
+    18  |     8   Test Mode       | Active       Off |  
+        |     7   Watchdog        | Active       Off |
+        |     6   Modulation      | Long     Default |   
+  PiCo  |     5   Addr 4          | 1              0 |
+        |     4   Addr 3          | 1              0 |
+        |     3   Addr 2          | 1              0 |
+        |     2   Addr 1          | 1              0 |
+        :     1   Addr 0          | 1              0 |
+     1  |                         --------------------
+-------- 
+
+
+*******************************************************************************
 Sensor Radio Message Syntax:
 
   //  <0;22;S2;T-12.5;H39;C007;#1234>

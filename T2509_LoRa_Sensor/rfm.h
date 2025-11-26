@@ -66,7 +66,6 @@ typedef struct
 {
     uint8_t           target;
     uint8_t           sender;
-    uint32_t          next_send;
     uint32_t          interval;
 } rfm_sensor_msg_st;
 

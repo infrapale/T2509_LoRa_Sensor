@@ -193,7 +193,7 @@ void sensor_initialize(void)
 
         Serial.printf("!!! Sensor[%d] %s: active: %d status: %d\n", sindx, sensor[sindx].meta.label, sensor[sindx].meta.active, sensor[sindx].meta.status);
         if (sensor[sindx].meta.active){
-            sensor[sindx].meta.next_send = millis() + INTERVAL_SEND_TEMP;
+            sensor[sindx].meta.next_send = millis() + sindx*1000;
             nbr_active++;
         }
     }

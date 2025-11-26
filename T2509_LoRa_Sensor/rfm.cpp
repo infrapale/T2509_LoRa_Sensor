@@ -24,7 +24,6 @@ extern sensor_st sensor[SENSOR_TYPE_NBR_OF];
 rfm_sensor_msg_st sensor_msg = {
     .target = ADDR_TARGET,
     .sender = ADDR_SENDER,
-    .next_send = 0,
     .interval = INTERVAL_SEND_TEMP,
 };
 
@@ -59,7 +58,7 @@ void rfm_initialize(void)
     }  
     rfm_ctrl.rec_msg_len    = sizeof(rfm_ctrl.rec_msg);
     rfm_ctrl.send_msg_len   = sizeof(rfm_ctrl.send_msg);
-    sensor_msg.next_send = millis() + sensor_msg.interval;
+ 
     sensor_msg.sender = main_ctrl.node_addr;
     Serial.printf("Max mesage length= %d\n",RH_RF95_MAX_MESSAGE_LEN);
 }
